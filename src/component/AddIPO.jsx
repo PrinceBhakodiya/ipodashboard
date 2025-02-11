@@ -91,7 +91,7 @@ const AddIPO = ({ isEdit = false, editData = null }) => {
     
     lotDetails: {
       retail: {
-        min: { lots: '', shares: '', amount: '' },
+        min: { lots: '1', shares: '', amount: '' },
         max: { lots: '', shares: '', amount: '' }
       },
       shni: {
@@ -439,7 +439,28 @@ console.log("inside")
                 <input
                   type="number"
                   value={newIpo.endPrice}
-                  onChange={(e) => setNewIpo({ ...newIpo, endPrice: e.target.value })}
+                  onChange={(e) =>{
+                    newIpo.issuePrice=`${newIpo.startPrice}-${newIpo.endPrice}`
+                    console.log(newIpo.issuePrice)
+                    setNewIpo({ ...newIpo, endPrice: e.target.value })
+                  } }
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  required
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                Lot Size
+                </label>
+                <input
+                  type="number"
+                  value={newIpo.lotSize}
+                  onChange={(e)=> {
+newIpo.lotDetails.retail.min.shares=e.target.value
+newIpo.lotDetails.retail.min.amount=e.target.value*newIpo.endPrice
+
+setNewIpo({ ...newIpo,lotSize: e.target.value })
+                  } }
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   required
                 />
@@ -481,18 +502,7 @@ console.log("inside")
           <div className="space-y-6">
             <h3 className="text-xl font-semibold text-gray-800">GMP Details</h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  GMP Percentage
-                </label>
-                <input
-                  type="number"
-                  value={newIpo.premiumGMP.percentage || ""}
-                  onChange={(e) => handleGmpChange("percentage", parseFloat(e.target.value) || 0)}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  placeholder="Enter percentage"
-                />
-              </div>
+            
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   GMP Value
@@ -505,92 +515,102 @@ console.log("inside")
                   placeholder="Enter value"
                 />
               </div>
-            </div>
-          </div>
-        );
-      case 3:
-        return (
-          <div className="space-y-6">
-            <h3 className="text-xl font-semibold text-gray-800">IPO Timeline</h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Open Date
+                  GMP Percentage
                 </label>
                 <input
-  type="date"
-  value={newIpo.openDate}
-  onChange={(e) => handleDateChange('openDate', e.target.value)}
-  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-  required
-/>
-
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Close Date
-                </label>
-                <input
-                  type="date"
-                  value={newIpo.closeDate}
-                  onChange={(e) => handleDateChange('closeDate', e.target.value)}
+                  type="number"
+                  value={newIpo.premiumGMP.percentage || ""}
+                  onChange={(e) => handleGmpChange("percentage", parseFloat(e.target.value) || 0)}
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  required
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Allotment Date
-                </label>
-                <input
-                  type="date"
-                  value={newIpo.allotmentDate}
-                  onChange={(e) => handleDateChange('allotmentDate', e.target.value)}
-
-                  // onChange={(e) => setNewIpo({ ...newIpo, allotmentDate: e.target.value })}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  required
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Refunds Date
-                </label>
-                <input
-                  type="date"
-                  value={newIpo.refundsDate}
-                  onChange={(e) => handleDateChange('refundsDate', e.target.value)}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  required
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Demat Transfer Date
-                </label>
-                <input
-                  type="date"
-                  value={newIpo.dematTransferDate}
-                  onChange={(e) => handleDateChange('dematTransferDate', e.target.value)}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  required
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Listing Date
-                </label>
-                <input
-                  type="date"
-                  value={newIpo.listingDate}
-                  onChange={(e) => handleDateChange('listingDate', e.target.value)}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  required
+                  placeholder="Enter percentage"
                 />
               </div>
             </div>
           </div>
         );
+        case 3:
+          return (
+            <div className="space-y-6">
+              <h3 className="text-xl font-semibold text-gray-800">IPO Timeline</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Open Date
+                  </label>
+                  <input
+                    type="date"
+                    value={newIpo.openDate || new Date().toISOString().split('T')[0]}
+                    onChange={(e) => handleDateChange('openDate', e.target.value)}
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Close Date
+                  </label>
+                  <input
+                    type="date"
+                    value={newIpo.closeDate || new Date().toISOString().split('T')[0]}
+                    onChange={(e) => handleDateChange('closeDate', e.target.value)}
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Allotment Date
+                  </label>
+                  <input
+                    type="date"
+                    value={newIpo.allotmentDate || new Date().toISOString().split('T')[0]}
+                    onChange={(e) => handleDateChange('allotmentDate', e.target.value)}
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Refunds Date
+                  </label>
+                  <input
+                    type="date"
+                    value={newIpo.refundsDate || new Date().toISOString().split('T')[0]}
+                    onChange={(e) => handleDateChange('refundsDate', e.target.value)}
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Demat Transfer Date
+                  </label>
+                  <input
+                    type="date"
+                    value={newIpo.dematTransferDate || new Date().toISOString().split('T')[0]}
+                    onChange={(e) => handleDateChange('dematTransferDate', e.target.value)}
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Listing Date
+                  </label>
+                  <input
+                    type="date"
+                    value={newIpo.listingDate || new Date().toISOString().split('T')[0]}
+                    onChange={(e) => handleDateChange('listingDate', e.target.value)}
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    required
+                  />
+                </div>
+              </div>
+            </div>
+          );
+        
 
         case 4:
           return (
@@ -614,12 +634,16 @@ console.log("inside")
                     Issue Price (₹)
                   </label>
                   <input
-                    type="number"
-                    value={newIpo.issuePrice}
-                    onChange={(e) => setNewIpo({ ...newIpo, issuePrice: e.target.value })}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    required
-                  />
+  type="number"
+  value={newIpo.issuePrice}  // Perform subtraction as a number
+  onChange={(e) => setNewIpo({ 
+    ...newIpo, 
+    issuePrice: parseFloat(e.target.value) || 0  // Ensure the input is treated as a number (fallback to 0 if NaN)
+  })}
+  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+  required
+/>
+
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -1065,7 +1089,12 @@ console.log("inside")
                   <input
                     type="number"
                     value={newIpo.lotDetails.retail.max.lots}
-                    onChange={(e) => setNewIpo({
+                    onChange={(e) =>{
+                      
+                      newIpo.lotDetails.retail.max.shares=e.target.value*newIpo.lotSize
+                      newIpo.lotDetails.retail.max.amount=newIpo.lotDetails.retail.max.shares*newIpo.endPrice
+
+                      setNewIpo({
                       ...newIpo,
                       lotDetails: {
                         ...newIpo.lotDetails,
@@ -1074,7 +1103,7 @@ console.log("inside")
                           max: { ...newIpo.lotDetails.retail.max, lots: e.target.value }
                         }
                       }
-                    })}
+                    })}}
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   />
                 </div>
@@ -1127,16 +1156,23 @@ console.log("inside")
                   <input
                     type="number"
                     value={newIpo.lotDetails.shni.min.lots}
-                    onChange={(e) => setNewIpo({
-                      ...newIpo,
-                      lotDetails: {
-                        ...newIpo.lotDetails,
-                        shni: {
-                          ...newIpo.lotDetails.shni,
-                          min: { ...newIpo.lotDetails.shni.min, lots: e.target.value }
+                    onChange={(e) =>{
+                            
+                      newIpo.lotDetails.shni.min.shares=e.target.value*newIpo.lotSize
+                      newIpo.lotDetails.shni.min.amount=newIpo.lotDetails.shni.min.shares*newIpo.endPrice
+
+                  
+                       setNewIpo({
+                        ...newIpo,
+                        lotDetails: {
+                          ...newIpo.lotDetails,
+                          shni: {
+                            ...newIpo.lotDetails.shni,
+                            min: { ...newIpo.lotDetails.shni.min, lots: e.target.value }
+                          }
                         }
-                      }
-                    })}
+                      })
+                    }}
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   />
                 </div>
@@ -1183,16 +1219,23 @@ console.log("inside")
                   <input
                     type="number"
                     value={newIpo.lotDetails.shni.max.lots}
-                    onChange={(e) => setNewIpo({
-                      ...newIpo,
-                      lotDetails: {
-                        ...newIpo.lotDetails,
-                        shni: {
-                          ...newIpo.lotDetails.shni,
-                          max: { ...newIpo.lotDetails.shni.max, lots: e.target.value }
+                    onChange={(e)=>{
+                      newIpo.lotDetails.shni.max.shares=e.target.value*newIpo.lotSize
+                      newIpo.lotDetails.shni.max.amount=newIpo.lotDetails.shni.max.shares*newIpo.endPrice
+
+                  
+                     
+                      setNewIpo({
+                        ...newIpo,
+                        lotDetails: {
+                          ...newIpo.lotDetails,
+                          shni: {
+                            ...newIpo.lotDetails.shni,
+                            max: { ...newIpo.lotDetails.shni.max, lots: e.target.value }
+                          }
                         }
-                      }
-                    })}
+                      })
+                    } }
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   />
                 </div>
@@ -1244,13 +1287,20 @@ console.log("inside")
                   <input
                     type="number"
                     value={newIpo.lotDetails.bhni.lots}
-                    onChange={(e) => setNewIpo({
-                      ...newIpo,
-                      lotDetails: {
-                        ...newIpo.lotDetails,
-                        bhni: { ...newIpo.lotDetails.bhni, lots: e.target.value }
-                      }
-                    })}
+                    onChange={(e)=> {
+                      newIpo.lotDetails.bhni.shares=e.target.value*newIpo.lotSize
+                      newIpo.lotDetails.bhni.amount=newIpo.lotDetails.bhni.shares*newIpo.endPrice
+
+                  
+                     
+                      setNewIpo({
+                        ...newIpo,
+                        lotDetails: {
+                          ...newIpo.lotDetails,
+                          bhni: { ...newIpo.lotDetails.bhni, lots: e.target.value }
+                        }
+                      })
+                    } }
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   />
                 </div>
@@ -1320,13 +1370,14 @@ console.log("inside")
             <div className="space-y-4">
               <h4 className="text-lg font-semibold text-blue-600">GMP Details</h4>
               <div className="grid grid-cols-2 gap-4 bg-gray-50 p-4 rounded-lg">
-                <div>
-                  <p className="text-sm text-gray-600">GMP Percentage</p>
-                  <p className="font-medium">{newIpo.premiumGMP?.percentage || '-'}%</p>
-                </div>
+              
                 <div>
                   <p className="text-sm text-gray-600">GMP Value</p>
                   <p className="font-medium">₹{newIpo.premiumGMP?.value || '-'}</p>
+                </div>
+                <div>
+                  <p className="text-sm text-gray-600">GMP Percentage</p>
+                  <p className="font-medium">{newIpo.premiumGMP?.percentage || '-'}%</p>
                 </div>
               </div>
             </div>
