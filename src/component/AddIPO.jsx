@@ -33,7 +33,6 @@ const AddIPO = ({ isEdit = false, editData = null }) => {
   const [isDate,isDateEnabled] = useState(false);
   const [isIssue,isIssueEnabled] = useState(false);
   const [isPromoters,isPromotersEnabled] = useState(false);
-
   const [confettiConfig, setConfettiConfig] = useState({
     numberOfPieces: 0,
     recycle: false
@@ -46,7 +45,7 @@ const AddIPO = ({ isEdit = false, editData = null }) => {
     ipoName: '',
     ipoLogo: '',
     aboutCompany:'',
-    
+    category:'Mainline',
     offerDate: '',
     startPrice: '',
     endPrice: '',
@@ -406,6 +405,35 @@ console.log("inside")
           <div className="space-y-6">
             <h3 className="text-xl font-semibold text-gray-800">Basic Information</h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+         
+<div className="col-span-2 mt-4">
+  <label className="block text-sm font-medium text-gray-700 mb-2">
+    IPO Type
+  </label>
+  <div className="flex items-center space-x-4">
+    <label className="flex items-center">
+      <input
+        type="radio"
+        value="Mainline"
+        checked={newIpo.category === "Mainline"}
+        onChange={(e) => setNewIpo({ ...newIpo, category: e.target.value })}
+        className="form-radio h-4 w-4 text-blue-600"
+      />
+      <span className="ml-2 text-gray-700">Mainline</span>
+    </label>
+    <label className="flex items-center">
+      <input
+        type="radio"
+        value="SME"
+        checked={newIpo.category === "SME"}
+        onChange={(e) => setNewIpo({ ...newIpo, category: e.target.value })}
+        className="form-radio h-4 w-4 text-blue-600"
+      />
+      <span className="ml-2 text-gray-700">SME</span>
+    </label>
+  </div>
+</div>
+
               <div className="col-span-2">
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   IPO Name

@@ -1,37 +1,112 @@
-import React, { useState } from 'react';
-import { Link } from 'react-router-dom'; // If you're using React Router for navigation
+import React, { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
+import axios from 'axios';
+import { Loader2 } from 'lucide-react';
 
 const MainDashboard = () => {
-  const [ipoList, setIpoList] = useState([
-    {
-      name: 'Tech Innovations Inc.',
-      status: 'Upcoming',
-    },
-    {
-      name: 'Green Energy Solutions',
-      status: 'Active',
-    },
-    {
-      name: 'HealthTech Innovations',
-      status: 'Listed',
-    },
-  ]);
+  const [ipoData, setIpoData] = useState({
+    ipoList: [],
+    loading: true,
+    error: null
+  });
 
-  const [smeList, setSmeList] = useState([
-    {
-      name: 'Tech Solutions Ltd.',
-    },
-    {
-      name: 'Green Energy Corp.',
-    },
-  ]);
+  const [smeData, setSmeData] = useState({
+    smeList: [],
+    loading: true,
+    error: null
+  });
+
+  // Fetch IPO data
+  useEffect(() => {
+    const fetchIPOs = async () => {
+      try {
+        const response = await axios.get('https://ipo-6thl.onrender.com/api/ipo?status=all');
+        setIpoData({
+          ipoList: response.data,
+          loading: false,
+          error: null
+        });
+      } catch (error) {
+        setIpoData({
+          ipoList: [],
+          loading: false,
+          error: 'Failed to fetch IPO data'
+        });
+      }
+    };
+
+    fetchIPOs();
+  }, []);
+
+  // Fetch SME data
+  useEffect(() => {
+    const fetchSMEs = async () => {
+      try {
+        const response = await axios.get('/api/smes');
+        setSmeData({
+          smeList: response.data,
+          loading: false,
+          error: null
+        });
+      } catch (error) {
+        setSmeData({
+          smeList: [],
+          loading: false,
+          error: 'Failed to fetch SME data'
+        });
+      }
+    };
+
+    fetchSMEs();
+  }, []);
 
   // Calculate totals
-  const totalIPOs = ipoList.length;
-  const totalSMEs = smeList.length;
-  const upcomingIPOs = ipoList.filter(ipo => ipo.status === 'Upcoming').length;
-  const activeIPOs = ipoList.filter(ipo => ipo.status === 'Active').length;
-  const listedIPOs = ipoList.filter(ipo => ipo.status === 'Listed').length;
+  const totalIPOs = ipoData.ipoList.length;
+  const totalSMEs = smeData.smeList.length;
+  const upcomingIPOs = ipoData.ipoList.filter(ipo => ipo.ipoStatus === 'upcoming').length;
+  const activeIPOs = ipoData.ipoList.filter(ipo => ipo.ipoStatus === 'live').length;
+  const listedIPOs = ipoData.ipoList.filter(ipo => ipo.ipoStatus === 'listed').length;
+
+  // Loading component
+  const LoadingCard = () => (
+    <div className="bg-gray-200 p-4 rounded-lg shadow-lg animate-pulse">
+      <div className="h-6 bg-gray-300 rounded w-1/2 mb-2"></div>
+      <div className="h-8 bg-gray-300 rounded w-1/4"></div>
+    </div>
+  );
+
+  // Error component
+  const ErrorCard = ({ message }) => (
+    <div className="bg-red-100 border border-red-400 text-red-700 p-4 rounded-lg">
+      <p>{message}</p>
+    </div>
+  );
+
+  if (ipoData.loading || smeData.loading) {
+    return (
+      <div className="min-h-screen bg-gray-100 p-6">
+        <div className="bg-white rounded-xl p-6 shadow-lg">
+          <h1 className="text-3xl font-semibold text-gray-800 mb-4">Dashboard Overview</h1>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {[...Array(5)].map((_, index) => (
+              <LoadingCard key={index} />
+            ))}
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (ipoData.error || smeData.error) {
+    return (
+      <div className="min-h-screen bg-gray-100 p-6">
+        <div className="bg-white rounded-xl p-6 shadow-lg">
+          <h1 className="text-3xl font-semibold text-gray-800 mb-4">Dashboard Overview</h1>
+          <ErrorCard message={ipoData.error || smeData.error} />
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gray-100 p-6">
@@ -42,10 +117,7 @@ const MainDashboard = () => {
             <h2 className="text-lg font-semibold text-white">Total IPOs</h2>
             <p className="text-3xl font-bold text-white">{totalIPOs}</p>
           </div>
-          <div className="bg-gradient-to-r from-green-400 to-green-600 p-4 rounded-lg shadow-lg transition-transform duration-300 hover:scale-105">
-            <h2 className="text-lg font-semibold text-white">Total SMEs</h2>
-            <p className="text-3xl font-bold text-white">{totalSMEs}</p>
-          </div>
+          
           <div className="bg-gradient-to-r from-yellow-400 to-yellow-600 p-4 rounded-lg shadow-lg transition-transform duration-300 hover:scale-105">
             <h2 className="text-lg font-semibold text-white">Upcoming IPOs</h2>
             <p className="text-3xl font-bold text-white">{upcomingIPOs}</p>
@@ -59,15 +131,9 @@ const MainDashboard = () => {
             <p className="text-3xl font-bold text-white">{listedIPOs}</p>
           </div>
         </div>
-        <div className="mt-6">
-          {/* <Link to="/addIPO" className="bg-blue-500 text-white rounded-lg py-2 px-4 mr-2 hover:bg-blue-600 transition duration-300">Add IPO</Link>
-          <Link to="/viewIPO" className="bg-green-500 text-white rounded-lg py-2 px-4 hover:bg-green-600 transition duration-300">View IPOs</Link>
-          <Link to="/addSME" className="bg-blue-500 text-white rounded-lg py-2 px-4 mr-2 hover:bg-blue-600 transition duration-300">Add SME</Link>
-          <Link to="/viewSME" className="bg-green-500 text-white rounded-lg py-2 px-4 hover:bg-green-600 transition duration-300">View SMEs</Link> */}
-        </div>
       </div>
     </div>
   );
 };
 
-export default MainDashboard; 
+export default MainDashboard;
