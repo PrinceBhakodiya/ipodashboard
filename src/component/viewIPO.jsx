@@ -20,7 +20,7 @@ const [error, setError] = useState(null);
   const fetchIpos = async () => {
     try {
       setLoading(true);
-      const response = await fetch('http://localhost:5000/api/ipo?status=all');
+      const response = await fetch('https://ipo-6thl.onrender.com/api/ipo?status=all');
       if (!response.ok) {
         throw new Error('Failed to fetch IPOs');
       }
@@ -36,7 +36,7 @@ const [error, setError] = useState(null);
   };
   const confirmDeleteIpo = async () => {
     try {
-      const response = await fetch(`http://localhost:5000/api/ipo/${deleteId}`, {
+      const response = await fetch(`https://ipo-6thl.onrender.com/api/ipo/${deleteId}`, {
         method: 'DELETE',
       });
 
@@ -56,7 +56,7 @@ const [error, setError] = useState(null);
   const handleEditSubmit = async (e) => {
     e.preventDefault();
     try {
-      const response = await fetch(`http://localhost:5000/api/ipo/${editedIpo._id}`, {
+      const response = await fetch(`https://ipo-6thl.onrender.com/api/ipo/${editedIpo._id}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
