@@ -142,10 +142,10 @@ const [error, setError] = useState(null);
           <p className="text-gray-600">Subscriptions: {ipo.subscriptions}</p>
           <p className="text-gray-600">GMP:  <span
     className={`font-medium ${
-      ipo.premiumGMP.value > 0 ? 'text-green-500' : 'text-red-500'
+       ipo.premiumGMP ==null? '' :ipo.premiumGMP.value > 0 ? 'text-green-500' : 'text-red-500'
     }`}
   >
-    {ipo.premiumGMP.value} (+{ipo.premiumGMP.percentage}%)</span></p>
+      {ipo.premiumGMP==null ? '':ipo.premiumGMP.value ?? ''} ({ipo.premiumGMP==null ? '': ipo.premiumGMP.percentage ?? ''}%)</span></p>
           <p className="text-gray-600">Refund Initiation: {moment(ipo.refundsDate).format('DD/MM/YYYY')}</p>
           <p className="text-gray-600">Demat Transfer: {moment(ipo.dem).format('DD/MM/YYYY')}</p>
           <p className="text-gray-600">Listing Date: {moment(ipo.listingDate).format('DD/MM/YYYY')} </p>

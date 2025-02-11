@@ -53,8 +53,6 @@ const Dashboard = () => {
     { id: 'mainDashboard', icon: PlusCircle, text: 'Dashboard' },
     { id: 'addIPO', icon: PlusCircle, text: 'Add IPO' },
     { id: 'viewIPO', icon: FileEdit, text: 'View IPO' },
-    { id: 'addSME', icon: PlusCircle, text: 'Add SME' },
-    { id: 'viewSME', icon: FileEdit, text: 'View SME' },
     { id: 'notification', icon:BellIcon, text: 'Notifications' },
   ];
 
