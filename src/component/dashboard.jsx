@@ -102,8 +102,6 @@ const Dashboard = () => {
             {selectedMenu === 'mainDashboard' && <MainDashboard />}
             {selectedMenu === 'viewIPO' && <ViewIPO />}
             {selectedMenu === 'addIPO' && <AddIPO />}
-            {selectedMenu === 'addSME' && <AddSME />}
-            {selectedMenu === 'viewSME' && <ViewSME />}
             {selectedMenu === 'notification' && <Notification />}
           </>
          
