@@ -3,6 +3,7 @@ import axios from 'axios';
 import { motion, AnimatePresence } from 'framer-motion';
 import Confetti from 'react-confetti';
 import PromotersSection from './Promoters.jsx'
+
 import { 
   CheckCircleIcon, 
   DocumentTextIcon, 
@@ -18,6 +19,7 @@ import {
 } from '@heroicons/react/24/outline';
 import { propTypesObject } from '@material-tailwind/react/types/components/checkbox.js';
 
+import { Switch } from '@headlessui/react'; // Import the Switch component
 
 // Custom Input Component with enhanced features
 
@@ -25,6 +27,13 @@ const AddIPO = ({ isEdit = false, editData = null }) => {
   const [notification, setNotification] = useState({ show: false, type: '', message: '' });
   const [currentStep, setCurrentStep] = useState(1);
   const [showConfetti, setShowConfetti] = useState(false);
+  
+  const [isBasicSwitch,isBasicSwitchEnabled] = useState(false);
+  const [isGMP,isGMPEnabled] = useState(false);
+  const [isDate,isDateEnabled] = useState(false);
+  const [isIssue,isIssueEnabled] = useState(false);
+  const [isPromoters,isPromotersEnabled] = useState(false);
+
   const [confettiConfig, setConfettiConfig] = useState({
     numberOfPieces: 0,
     recycle: false
@@ -1347,8 +1356,22 @@ setNewIpo({ ...newIpo,lotSize: e.target.value })
             <h3 className="text-2xl font-bold text-gray-800 border-b pb-4">IPO Preview</h3>
             
             {/* Basic Information */}
-            <div className="space-y-4">
+            <div className="flex items-center justify-between mb-4">
               <h4 className="text-lg font-semibold text-blue-600">Basic Information</h4>
+              <Switch
+                checked={isBasicSwitch}
+                onChange={isBasicSwitchEnabled}
+                className={`${
+                  isBasicSwitch ? 'bg-blue-600' : 'bg-gray-200'
+                } relative inline-flex items-center h-6 rounded-full w-11`}
+              >
+                <span
+                  className={`${
+                    isBasicSwitch ? 'translate-x-6' : 'translate-x-1'
+                  } inline-block w-4 h-4 transform bg-white rounded-full transition`}
+                />
+              </Switch>
+            </div>
               <div className="grid grid-cols-2 gap-4 bg-gray-50 p-4 rounded-lg">
                 <div>
                   <p className="text-sm text-gray-600">Company Name</p>
@@ -1363,13 +1386,27 @@ setNewIpo({ ...newIpo,lotSize: e.target.value })
                   <p className="text-sm text-gray-600">Price Band</p>
                   <p className="font-medium">₹{newIpo.startPrice || '-'} - ₹{newIpo.endPrice || '-'}</p>
                 </div>
-              </div>
+            
             </div>
 
             {/* GMP Details */}
             <div className="space-y-4">
-              <h4 className="text-lg font-semibold text-blue-600">GMP Details</h4>
-              <div className="grid grid-cols-2 gap-4 bg-gray-50 p-4 rounded-lg">
+             <div className="flex items-center justify-between mb-4">
+              <h4 className="text-lg font-semibold text-blue-600">GMP</h4>
+              <Switch
+                checked={isGMP}
+                onChange={isGMPEnabled}
+                className={`${
+                  isGMP ? 'bg-blue-600' : 'bg-gray-200'
+                } relative inline-flex items-center h-6 rounded-full w-11`}
+              >
+                <span
+                  className={`${
+                    isGMP ? 'translate-x-6' : 'translate-x-1'
+                  } inline-block w-4 h-4 transform bg-white rounded-full transition`}
+                />
+              </Switch>
+       </div>      <div className="grid grid-cols-2 gap-4 bg-gray-50 p-4 rounded-lg">
               
                 <div>
                   <p className="text-sm text-gray-600">GMP Value</p>
@@ -1384,8 +1421,22 @@ setNewIpo({ ...newIpo,lotSize: e.target.value })
 
             {/* Important Dates */}
             <div className="space-y-4">
-              <h4 className="text-lg font-semibold text-blue-600">Important Dates</h4>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 bg-gray-50 p-4 rounded-lg">
+            <div className="flex items-center justify-between mb-4">
+              <h4 className="text-lg font-semibold text-blue-600">IPO Dates</h4>
+              <Switch
+                checked={isDate}
+                onChange={isDateEnabled}
+                className={`${
+                  isDate ? 'bg-blue-600' : 'bg-gray-200'
+                } relative inline-flex items-center h-6 rounded-full w-11`}
+              >
+                <span
+                  className={`${
+                    isDate ? 'translate-x-6' : 'translate-x-1'
+                  } inline-block w-4 h-4 transform bg-white rounded-full transition`}
+                />
+              </Switch>
+       </div>   <div className="grid grid-cols-1 md:grid-cols-3 gap-4 bg-gray-50 p-4 rounded-lg">
                 <div>
                   <p className="text-sm text-gray-600">Open Date</p>
                   <p className="font-medium">{newIpo.openDate ? new Date(newIpo.openDate).toLocaleDateString() : '-'}</p>
@@ -1415,8 +1466,22 @@ setNewIpo({ ...newIpo,lotSize: e.target.value })
 
             {/* Issue Details */}
             <div className="space-y-4">
+            <div className="flex items-center justify-between mb-4">
               <h4 className="text-lg font-semibold text-blue-600">Issue Details</h4>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 bg-gray-50 p-4 rounded-lg">
+              <Switch
+                checked={isIssue}
+                onChange={isIssueEnabled}
+                className={`${
+                  isIssue ? 'bg-blue-600' : 'bg-gray-200'
+                } relative inline-flex items-center h-6 rounded-full w-11`}
+              >
+                <span
+                  className={`${
+                    isIssue ? 'translate-x-6' : 'translate-x-1'
+                  } inline-block w-4 h-4 transform bg-white rounded-full transition`}
+                />
+              </Switch>
+       </div>       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 bg-gray-50 p-4 rounded-lg">
                 <div>
                   <p className="text-sm text-gray-600">Face Value</p>
                   <p className="font-medium">₹{newIpo.faceValue || '-'}</p>
@@ -1438,8 +1503,22 @@ setNewIpo({ ...newIpo,lotSize: e.target.value })
 
             {/* Promoter Information */}
             <div className="space-y-4">
-              <h4 className="text-lg font-semibold text-blue-600">Promoter Information</h4>
-              <div className="bg-gray-50 p-4 rounded-lg">
+            <div className="flex items-center justify-between mb-4">
+              <h4 className="text-lg font-semibold text-blue-600">Promoters</h4>
+              <Switch
+                checked={isPromoters}
+                onChange={isPromotersEnabled}
+                className={`${
+                  isPromoters ? 'bg-blue-600' : 'bg-gray-200'
+                } relative inline-flex items-center h-6 rounded-full w-11`}
+              >
+                <span
+                  className={`${
+                    isPromoters ? 'translate-x-6' : 'translate-x-1'
+                  } inline-block w-4 h-4 transform bg-white rounded-full transition`}
+                />
+              </Switch>
+       </div>      <div className="bg-gray-50 p-4 rounded-lg">
                
                 {promoters && promoters.length > 0 ? (
                   <div className="space-y-2">
@@ -1459,8 +1538,22 @@ setNewIpo({ ...newIpo,lotSize: e.target.value })
 
             {/* Lead Managers Information */}
             <div className="space-y-4">
-              <h4 className="text-lg font-semibold text-blue-600">Lead Managers</h4>
-              <div className="bg-gray-50 p-4 rounded-lg">
+            <div className="flex items-center justify-between mb-4">
+              <h4 className="text-lg font-semibold text-blue-600">Lead Manager</h4>
+              <Switch
+                checked={isPromoters}
+                onChange={isPromotersEnabled}
+                className={`${
+                  isPromoters ? 'bg-blue-600' : 'bg-gray-200'
+                } relative inline-flex items-center h-6 rounded-full w-11`}
+              >
+                <span
+                  className={`${
+                    isPromoters ? 'translate-x-6' : 'translate-x-1'
+                  } inline-block w-4 h-4 transform bg-white rounded-full transition`}
+                />
+              </Switch>
+       </div>      <div className="bg-gray-50 p-4 rounded-lg">
                 {leadManagers && leadManagers.length > 0 ? (
                   <div className="space-y-2">
                     {leadManagers.map((manager, index) => (
@@ -1653,15 +1746,19 @@ setNewIpo({ ...newIpo,lotSize: e.target.value })
                       <ArrowRightIcon className="w-5 h-5" />
                     </button>
                   ) : (
-                    <button
-                      type="submit"
-                      onChange={handleSubmit}
-                      className="px-6 py-3 bg-gradient-to-r from-green-500 to-emerald-500 text-white rounded-lg 
-                        hover:from-green-600 hover:to-emerald-600 transition duration-300 flex items-center space-x-2"
-                    >
-                      <span>Submit IPO</span>
-                      <CheckIcon className="w-5 h-5" />
-                    </button>
+<button
+  type="submit"
+  disabled={!(isBasicSwitch && isDate && isGMP && isIssue && isPromoters)}
+  onClick={handleSubmit}
+  className={`px-6 py-3 rounded-lg transition duration-300 flex items-center space-x-2
+    ${(isBasicSwitch && isDate && isGMP && isIssue && isPromoters)
+      ? 'bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 text-white cursor-pointer'
+      : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+    }`}
+>
+  <span>Submit IPO</span>
+  <CheckIcon className="w-5 h-5" />
+</button>
                   )}
                 </div>
               </form>
