@@ -1,0 +1,34 @@
+/* src/component/Login.css */
+/* Add this CSS for the wave animation */
+@keyframes wave-animation {
+    0% {
+      transform: translateY(0); /* Start at original position */
+      background-color: rgba(0, 0, 255, 0.1);
+    }
+    25% {
+      transform: translateY(-10px); /* Move up */
+      background-color: rgba(0, 0, 255, 0.3);
+    }
+    50% {
+      transform: translateY(0); /* Back to original position */
+      background-color: rgba(0, 0, 255, 0.1);
+    }
+    75% {
+      transform: translateY(10px); /* Move down */
+      background-color: rgba(0, 0, 255, 0.3);
+    }
+    100% {
+      transform: translateY(0); /* Back to original position */
+      background-color: rgba(0, 0, 255, 0.1);
+    }
+}
+  
+.wave-background {
+    animation: wave-animation 5s infinite;
+    width: 100vw; /* Full width of the viewport */
+    height: 100vh; /* Full height of the viewport */
+    position: absolute; /* Positioning to cover the screen */
+    top: 0; /* Align to the top */
+    left: 0; /* Align to the left */
+    /* ... existing styles ... */
+}
