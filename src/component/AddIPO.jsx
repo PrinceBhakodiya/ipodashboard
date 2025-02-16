@@ -28,11 +28,18 @@ const AddIPO = ({ isEdit = false, editData = null }) => {
   const [currentStep, setCurrentStep] = useState(1);
   const [showConfetti, setShowConfetti] = useState(false);
   
-  const [isBasicSwitch,isBasicSwitchEnabled] = useState(false);
-  const [isGMP,isGMPEnabled] = useState(false);
-  const [isDate,isDateEnabled] = useState(false);
-  const [isIssue,isIssueEnabled] = useState(false);
-  const [isPromoters,isPromotersEnabled] = useState(false);
+  const [switchStates, setSwitchStates] = useState({
+    isBasic: false,
+    isGMP: false,
+    isDate: false,
+    isIssue: false,
+    isPromoters: false,
+  });
+  
+  const toggleSwitch = (key) => {
+    setSwitchStates({ ...switchStates, [key]: !switchStates[key] });
+  };
+  
   const [confettiConfig, setConfettiConfig] = useState({
     numberOfPieces: 0,
     recycle: false
@@ -40,16 +47,14 @@ const AddIPO = ({ isEdit = false, editData = null }) => {
   const [windowDimension, setWindowDimension] = useState({
     width: window.innerWidth,
     height: window.innerHeight
-  });
-  const [newIpo, setNewIpo] = useState({
+  });const [newIpo, setNewIpo] = useState({
     ipoName: '',
     ipoLogo: '',
-    aboutCompany:'',
-    category:'Mainline',
+    aboutCompany: '',
+    category: 'Mainline',
     offerDate: '',
     startPrice: '',
     endPrice: '',
-    // offerEndPrice: '',
     lotSize: '',
     subscription: '',
     premiumGMP: {
@@ -80,14 +85,16 @@ const AddIPO = ({ isEdit = false, editData = null }) => {
     listingAt: '',
     registrar: '',
     drhpUrl: '',
-    rhpUrl:'',
-    anchorList:'',
+    rhpUrl: '',
+    anchorList: '',
+    
     valuations: {
       eps: '',
       peRatio: '',
       ronw: '',
       nav: ''
     },
+  
     financials: [
       {
         period: '',
@@ -96,24 +103,53 @@ const AddIPO = ({ isEdit = false, editData = null }) => {
         profit: ''
       }
     ],
-    
+  
     lotDetails: {
       retail: {
-        min: { lots: '1', shares: '', amount: '' },
+        min: { lots: 1, shares: '', amount: '' },
         max: { lots: '', shares: '', amount: '' }
       },
       shni: {
         min: { lots: '', shares: '', amount: '' },
         max: { lots: '', shares: '', amount: '' }
       },
-      bhni: { 
+      bhni: {
         lots: '',
         shares: '',
         amount: ''
       }
     },
+  
+    // New fields
+    objectOfTheIssue: '',
+    
+    companyDetails: {
+      name: '',
+      address: '',
+      phone: '',
+      email: '',
+      website: ''
+    },
+    
+    registrarDetails: {
+      name: '',
+      address: '',
+      phone: '',
+      email: '',
+      website: ''
+    },
+  
+    peersComparison: [
+      {
+        companyName: '',
+        pbRatio: '',
+        peRatio: '',
+        ronw: '',
+        totalRevenue: ''
+      }
+    ]
   });
-
+  
   const validateDate = (date) => {
     if (!date) return false;
     const now = new Date();
@@ -199,18 +235,17 @@ const AddIPO = ({ isEdit = false, editData = null }) => {
               cleanObj[key] = nestedClean;
             }
           }
-          // Handle arrays of objects for promoters and leadManagers
-          else if (Array.isArray(value) && (key === 'promoters' || key === 'leadManagers')) {
-            const cleanArray = value
-              .filter(item => item && (typeof item === 'string' ? item.trim() !== '' : item.name?.trim() !== ''))
-              .map(item => typeof item === 'string' ? { name: item } : { name: item.name });
-            if (cleanArray.length > 0) {
-              cleanObj[key] = cleanArray;
-            }
-          }
-          // Handle other arrays
+          // Handle specific arrays like promoters, leadManagers, and financials
           else if (Array.isArray(value)) {
-            const cleanArray = value.filter(item => item !== null && item !== '');
+            let cleanArray = value.filter(item => {
+              if (key === 'promoters' || key === 'leadManagers') {
+                return item && (typeof item === 'string' ? item.trim() !== '' : item.name?.trim() !== '');
+              } else if (key === 'financials') {
+                return item.period || item.assets || item.revenue || item.profit;
+              }
+              return item !== null && item !== '';
+            });
+      
             if (cleanArray.length > 0) {
               cleanObj[key] = cleanArray;
             }
@@ -229,8 +264,8 @@ const AddIPO = ({ isEdit = false, editData = null }) => {
       // Clean the data before sending
       const cleanedData = removeEmptyFields({
         ...newIpo,
-        promoters: promoters ? promoters.map(p => ({ name: p.name })) : undefined, 
-        leadManagers: leadManagers ? leadManagers.map(m => ({ name: m.name })) : undefined
+        promoters: promoters ? promoters.map(p => p.name && p.name.trim() ? { name: p.name } : null).filter(Boolean) : undefined,
+        leadManagers: leadManagers ? leadManagers.map(m => m.name && m.name.trim() ? { name: m.name } : null).filter(Boolean) : undefined
       });
       
       // Remove undefined keys from the cleaned data
@@ -246,10 +281,9 @@ const AddIPO = ({ isEdit = false, editData = null }) => {
         return;
       }
       
-  
       const url = isEdit 
-        ? `https://ipo-6thl.onrender.com/api/ipo/${editData._id}`
-        : 'https://ipo-6thl.onrender.com/api/ipo';
+        ? `http://localhost:5000/api/ipo/${editData._id}`
+        : 'http://localhost:5000/api/ipo';
       
       const method = isEdit ? 'PUT' : 'POST';
       
@@ -316,16 +350,16 @@ const AddIPO = ({ isEdit = false, editData = null }) => {
           revenue: '',
           profit: ''
         }],
-        lotDetails: editData.lotDetails || {
+        lotDetails: {
           retail: {
+            min:  editData.lotDetails?.retail.min ?? { lots: '', shares: '', amount: '' },
+            max:  editData.lotDetails?.retail.max ??{ lots: '', shares: '', amount: '' }
+          },
+          shni: editData.lotDetails?.shni ?? {
             min: { lots: '', shares: '', amount: '' },
             max: { lots: '', shares: '', amount: '' }
           },
-          shni: {
-            min: { lots: '', shares: '', amount: '' },
-            max: { lots: '', shares: '', amount: '' }
-          },
-          bhni: { 
+          bhni: editData.lotDetails?.bhni ?? {
             lots: '',
             shares: '',
             amount: ''
@@ -334,15 +368,19 @@ const AddIPO = ({ isEdit = false, editData = null }) => {
       });
 
       // Set promoters if they exist (updated to handle string array)
-      if (editData.promoters) {
-        // Convert each string in the array to an object with a 'name' property
-        setPromoters(editData.promoters.map(name => ({ name })));
+      if (editData.promoters && Array.isArray(editData.promoters)) {
+        setPromoters(editData.promoters.map(promoter => 
+          typeof promoter === 'string' ? { name: promoter } : promoter
+        ));
       } else {
-        // Reset or set a default value if no promoters are provided
         setPromoters([{ name: '' }]);
       }
-      if (editData.leadManagers) {
-        setLeadManagers(editData.leadManagers);
+      if (editData.leadManagers && Array.isArray(editData.leadManagers)) {
+        setLeadManagers(editData.leadManagers.map(manager => 
+          typeof manager === 'string' ? { name: manager } : manager
+        ));
+      } else {
+        setLeadManagers([{ name: '' }]);
       }
     }
   }, [isEdit, editData]);
@@ -1052,7 +1090,263 @@ setNewIpo({ ...newIpo,lotSize: e.target.value })
                   ))}
                 </div>
               </div>
+           
+              <div className="col-span-2">
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            Object of the Issue
+          </label>
+          <textarea
+            rows="3"
+            value={newIpo.objectOfTheIssue || ''}
+            onChange={(e) => setNewIpo({ ...newIpo, objectOfTheIssue: e.target.value })}
+            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            placeholder="Describe the object of the issue..."
+          />
+        </div>
+
+        {/* Company Details */}
+        <div className="col-span-2 space-y-4">
+          <h4 className="text-lg font-semibold text-gray-800">Company Details</h4>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Company Name
+              </label>
+              <input
+                type="text"
+                value={newIpo.companyDetails?.name || ''}
+                onChange={(e) =>
+                  setNewIpo({
+                    ...newIpo,
+                    companyDetails: { ...newIpo.companyDetails, name: e.target.value },
+                  })
+                }
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+              />
             </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Address
+              </label>
+              <input
+                type="text"
+                value={newIpo.companyDetails?.address || ''}
+                onChange={(e) =>
+                  setNewIpo({
+                    ...newIpo,
+                    companyDetails: { ...newIpo.companyDetails, address: e.target.value },
+                  })
+                }
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Phone
+              </label>
+              <input
+                type="tel"
+                value={newIpo.companyDetails?.phone || ''}
+                onChange={(e) =>
+                  setNewIpo({
+                    ...newIpo,
+                    companyDetails: { ...newIpo.companyDetails, phone: e.target.value },
+                  })
+                }
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Email
+              </label>
+              <input
+                type="email"
+                value={newIpo.companyDetails?.email || ''}
+                onChange={(e) =>
+                  setNewIpo({
+                    ...newIpo,
+                    companyDetails: { ...newIpo.companyDetails, email: e.target.value },
+                  })
+                }
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+              />
+            </div>
+            <div className="col-span-2">
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Website
+              </label>
+              <input
+                type="url"
+                value={newIpo.companyDetails?.website || ''}
+                onChange={(e) =>
+                  setNewIpo({
+                    ...newIpo,
+                    companyDetails: { ...newIpo.companyDetails, website: e.target.value },
+                  })
+                }
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                placeholder="https://www.example.com"
+              />
+            </div>
+          </div>
+        </div>
+
+        {/* Registrar Details */}
+        <div className="col-span-2 space-y-4">
+          <h4 className="text-lg font-semibold text-gray-800">Registrar Details</h4>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Registrar Name
+              </label>
+              <input
+                type="text"
+                value={newIpo.registrarDetails?.name || ''}
+                onChange={(e) =>
+                  setNewIpo({
+                    ...newIpo,
+                    registrarDetails: { ...newIpo.registrarDetails, name: e.target.value },
+                  })
+                }
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Registrar Address
+              </label>
+              <input
+                type="text"
+                value={newIpo.registrarDetails?.address || ''}
+                onChange={(e) =>
+                  setNewIpo({
+                    ...newIpo,
+                    registrarDetails: { ...newIpo.registrarDetails, address: e.target.value },
+                  })
+                }
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+              />
+            </div>
+          </div>
+        </div>
+
+      {/* Peers Comparison */}
+<div className="col-span-2">
+  <h4 className="text-lg font-semibold text-gray-800 flex justify-between items-center">
+    Peers Comparison
+    <button
+      type="button"
+      onClick={() => setNewIpo({
+        ...newIpo,
+        peersComparison: [
+          ...(newIpo.peersComparison || []),
+          { companyName: '', pbRatio: '', peRatio: '', ronw: '', totalRevenue: '' }
+        ]
+      })}
+      className="px-3 py-1 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition-all"
+    >
+      Add Company
+    </button>
+  </h4>
+
+  {newIpo.peersComparison && newIpo.peersComparison.length > 0 ? (
+    <div className="space-y-6 mt-4">
+      {newIpo.peersComparison.map((peer, index) => (
+        <div key={index} className="p-4 bg-gray-50 rounded-lg shadow-md space-y-4 relative">
+          <button
+            type="button"
+            onClick={() => {
+              const updatedPeers = newIpo.peersComparison.filter((_, i) => i !== index);
+              setNewIpo({ ...newIpo, peersComparison: updatedPeers });
+            }}
+            className="absolute top-2 right-2 text-red-500 hover:text-red-700"
+          >
+            Remove
+          </button>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">Company Name</label>
+            <input
+              type="text"
+              value={peer.companyName}
+              onChange={(e) => {
+                const updatedPeers = [...newIpo.peersComparison];
+                updatedPeers[index].companyName = e.target.value;
+                setNewIpo({ ...newIpo, peersComparison: updatedPeers });
+              }}
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+              placeholder="Enter company name"
+            />
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">P/B Ratio</label>
+              <input
+                type="number"
+                step="0.01"
+                value={peer.pbRatio}
+                onChange={(e) => {
+                  const updatedPeers = [...newIpo.peersComparison];
+                  updatedPeers[index].pbRatio = e.target.value;
+                  setNewIpo({ ...newIpo, peersComparison: updatedPeers });
+                }}
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">P/E Ratio</label>
+              <input
+                type="number"
+                step="0.01"
+                value={peer.peRatio}
+                onChange={(e) => {
+                  const updatedPeers = [...newIpo.peersComparison];
+                  updatedPeers[index].peRatio = e.target.value;
+                  setNewIpo({ ...newIpo, peersComparison: updatedPeers });
+                }}
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">RoNW (%)</label>
+              <input
+                type="number"
+                step="0.01"
+                value={peer.ronw}
+                onChange={(e) => {
+                  const updatedPeers = [...newIpo.peersComparison];
+                  updatedPeers[index].ronw = e.target.value;
+                  setNewIpo({ ...newIpo, peersComparison: updatedPeers });
+                }}
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Total Revenue (₹ Cr)</label>
+              <input
+                type="number"
+                step="0.01"
+                value={peer.totalRevenue}
+                onChange={(e) => {
+                  const updatedPeers = [...newIpo.peersComparison];
+                  updatedPeers[index].totalRevenue = e.target.value;
+                  setNewIpo({ ...newIpo, peersComparison: updatedPeers });
+                }}
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+              />
+            </div>
+          </div>
+        </div>
+      ))}
+    </div>
+  ) : (
+    <p className="mt-4 text-gray-600">No peers added yet. Click "Add Company" to start adding peers.</p>
+  )}
+</div>
+
+      </div>
           );
       
       case 7:
@@ -1387,18 +1681,18 @@ setNewIpo({ ...newIpo,lotSize: e.target.value })
             <div className="flex items-center justify-between mb-4">
               <h4 className="text-lg font-semibold text-blue-600">Basic Information</h4>
               <Switch
-                checked={isBasicSwitch}
-                onChange={isBasicSwitchEnabled}
-                className={`${
-                  isBasicSwitch ? 'bg-blue-600' : 'bg-gray-200'
-                } relative inline-flex items-center h-6 rounded-full w-11`}
-              >
-                <span
+  checked={switchStates.isBasic}
+  onChange={() => toggleSwitch('isBasic')}
+  className={`${
+    switchStates.isBasic ? 'bg-blue-600' : 'bg-gray-200'
+  } relative inline-flex items-center h-6 rounded-full w-11`}
+>
+<span
                   className={`${
-                    isBasicSwitch ? 'translate-x-6' : 'translate-x-1'
+                    switchStates.isBasic ? 'translate-x-6' : 'translate-x-1'
                   } inline-block w-4 h-4 transform bg-white rounded-full transition`}
-                />
-              </Switch>
+                /></Switch>
+
             </div>
               <div className="grid grid-cols-2 gap-4 bg-gray-50 p-4 rounded-lg">
                 <div>
@@ -1422,18 +1716,17 @@ setNewIpo({ ...newIpo,lotSize: e.target.value })
              <div className="flex items-center justify-between mb-4">
               <h4 className="text-lg font-semibold text-blue-600">GMP</h4>
               <Switch
-                checked={isGMP}
-                onChange={isGMPEnabled}
-                className={`${
-                  isGMP ? 'bg-blue-600' : 'bg-gray-200'
-                } relative inline-flex items-center h-6 rounded-full w-11`}
-              >
-                <span
+  checked={switchStates.isGMP}
+  onChange={() => toggleSwitch('isGMP')}
+  className={`${
+    switchStates.isGMP ? 'bg-blue-600' : 'bg-gray-200'
+  } relative inline-flex items-center h-6 rounded-full w-11`}
+><span
                   className={`${
-                    isGMP ? 'translate-x-6' : 'translate-x-1'
+                    switchStates.isGMP  ? 'translate-x-6' : 'translate-x-1'
                   } inline-block w-4 h-4 transform bg-white rounded-full transition`}
-                />
-              </Switch>
+                /></Switch>
+
        </div>      <div className="grid grid-cols-2 gap-4 bg-gray-50 p-4 rounded-lg">
               
                 <div>
@@ -1452,18 +1745,17 @@ setNewIpo({ ...newIpo,lotSize: e.target.value })
             <div className="flex items-center justify-between mb-4">
               <h4 className="text-lg font-semibold text-blue-600">IPO Dates</h4>
               <Switch
-                checked={isDate}
-                onChange={isDateEnabled}
-                className={`${
-                  isDate ? 'bg-blue-600' : 'bg-gray-200'
-                } relative inline-flex items-center h-6 rounded-full w-11`}
-              >
-                <span
+  checked={switchStates.isDate}
+  onChange={() => toggleSwitch('isDate')}
+  className={`${
+    switchStates.isDate ? 'bg-blue-600' : 'bg-gray-200'
+  } relative inline-flex items-center h-6 rounded-full w-11`}
+><span
                   className={`${
-                    isDate ? 'translate-x-6' : 'translate-x-1'
+                    switchStates.isDate ? 'translate-x-6' : 'translate-x-1'
                   } inline-block w-4 h-4 transform bg-white rounded-full transition`}
-                />
-              </Switch>
+                /></Switch>
+              
        </div>   <div className="grid grid-cols-1 md:grid-cols-3 gap-4 bg-gray-50 p-4 rounded-lg">
                 <div>
                   <p className="text-sm text-gray-600">Open Date</p>
@@ -1497,18 +1789,16 @@ setNewIpo({ ...newIpo,lotSize: e.target.value })
             <div className="flex items-center justify-between mb-4">
               <h4 className="text-lg font-semibold text-blue-600">Issue Details</h4>
               <Switch
-                checked={isIssue}
-                onChange={isIssueEnabled}
-                className={`${
-                  isIssue ? 'bg-blue-600' : 'bg-gray-200'
-                } relative inline-flex items-center h-6 rounded-full w-11`}
-              >
-                <span
+  checked={switchStates.isIssue}
+  onChange={() => toggleSwitch('isIssue')}
+  className={`${
+    switchStates.isIssue ? 'bg-blue-600' : 'bg-gray-200'
+  } relative inline-flex items-center h-6 rounded-full w-11`}
+><span
                   className={`${
-                    isIssue ? 'translate-x-6' : 'translate-x-1'
+                    switchStates.isIssue ? 'translate-x-6' : 'translate-x-1'
                   } inline-block w-4 h-4 transform bg-white rounded-full transition`}
-                />
-              </Switch>
+                /></Switch>
        </div>       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 bg-gray-50 p-4 rounded-lg">
                 <div>
                   <p className="text-sm text-gray-600">Face Value</p>
@@ -1534,18 +1824,18 @@ setNewIpo({ ...newIpo,lotSize: e.target.value })
             <div className="flex items-center justify-between mb-4">
               <h4 className="text-lg font-semibold text-blue-600">Promoters</h4>
               <Switch
-                checked={isPromoters}
-                onChange={isPromotersEnabled}
-                className={`${
-                  isPromoters ? 'bg-blue-600' : 'bg-gray-200'
-                } relative inline-flex items-center h-6 rounded-full w-11`}
-              >
-                <span
+  checked={switchStates.isPromoters}
+  onChange={() => toggleSwitch('isPromoters')}
+  className={`${
+    switchStates.isPromoters ? 'bg-blue-600' : 'bg-gray-200'
+  } relative inline-flex items-center h-6 rounded-full w-11`}
+>
+<span
                   className={`${
-                    isPromoters ? 'translate-x-6' : 'translate-x-1'
+                    switchStates.isPromoters ? 'translate-x-6' : 'translate-x-1'
                   } inline-block w-4 h-4 transform bg-white rounded-full transition`}
                 />
-              </Switch>
+</Switch>
        </div>      <div className="bg-gray-50 p-4 rounded-lg">
                
                 {promoters && promoters.length > 0 ? (
@@ -1568,19 +1858,7 @@ setNewIpo({ ...newIpo,lotSize: e.target.value })
             <div className="space-y-4">
             <div className="flex items-center justify-between mb-4">
               <h4 className="text-lg font-semibold text-blue-600">Lead Manager</h4>
-              <Switch
-                checked={isPromoters}
-                onChange={isPromotersEnabled}
-                className={`${
-                  isPromoters ? 'bg-blue-600' : 'bg-gray-200'
-                } relative inline-flex items-center h-6 rounded-full w-11`}
-              >
-                <span
-                  className={`${
-                    isPromoters ? 'translate-x-6' : 'translate-x-1'
-                  } inline-block w-4 h-4 transform bg-white rounded-full transition`}
-                />
-              </Switch>
+             
        </div>      <div className="bg-gray-50 p-4 rounded-lg">
                 {leadManagers && leadManagers.length > 0 ? (
                   <div className="space-y-2">
@@ -1776,10 +2054,10 @@ setNewIpo({ ...newIpo,lotSize: e.target.value })
                   ) : (
 <button
   type="submit"
-  disabled={!(isBasicSwitch && isDate && isGMP && isIssue && isPromoters)}
+  disabled={!(switchStates.isBasic)}
   onClick={handleSubmit}
   className={`px-6 py-3 rounded-lg transition duration-300 flex items-center space-x-2
-    ${(isBasicSwitch && isDate && isGMP && isIssue && isPromoters)
+    ${(switchStates.isBasic)
       ? 'bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 text-white cursor-pointer'
       : 'bg-gray-300 text-gray-500 cursor-not-allowed'
     }`}
