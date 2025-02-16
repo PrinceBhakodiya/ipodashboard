@@ -282,8 +282,8 @@ const AddIPO = ({ isEdit = false, editData = null }) => {
       }
       
       const url = isEdit 
-        ? `http://localhost:5000/api/ipo/${editData._id}`
-        : 'http://localhost:5000/api/ipo';
+        ? `https://ipo-6thl.onrender.com/api/ipo/${editData._id}`
+        : 'https://ipo-6thl.onrender.com/api/ipo';
       
       const method = isEdit ? 'PUT' : 'POST';
       
