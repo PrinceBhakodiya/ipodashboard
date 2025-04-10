@@ -37,7 +37,7 @@ const GmpUpdateManager = () => {
   // Handle updating GMP for a specific IPO
   const handleGmpUpdate = async (ipo, newValue, newPercentage) => {
     try {
-      const response = await fetch(`http://localhost:5000/api/ipo/${ipo._id}/update-gmp`, {
+      const response = await fetch(`https://ipo-6thl.onrender.com/api/ipo/${ipo._id}/update-gmp`, {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',

@@ -20,7 +20,7 @@ const MainDashboard = () => {
   useEffect(() => {
     const fetchIPOs = async () => {
       try {
-        const response = await axios.get('http://localhost:5000/api/ipo?status=all');
+        const response = await axios.get('https://ipo-6thl.onrender.com/api/ipo?status=all');
         setIpoData({
           ipoList: response.data,
           loading: false,
