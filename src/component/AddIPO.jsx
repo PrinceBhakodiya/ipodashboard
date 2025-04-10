@@ -17,9 +17,12 @@ import {
   ArrowRightIcon,
   CheckIcon
 } from '@heroicons/react/24/outline';
+import 'react-quill/dist/quill.snow.css';
+
 import { propTypesObject } from '@material-tailwind/react/types/components/checkbox.js';
 
 import { Switch } from '@headlessui/react'; // Import the Switch component
+import ReactQuill from 'react-quill';
 
 // Custom Input Component with enhanced features
 
@@ -52,9 +55,11 @@ const AddIPO = ({ isEdit = false, editData = null }) => {
     ipoLogo: '',
     aboutCompany: '',
     category: 'Mainline',
+    strengths: '',
+    risks: '',
     offerDate: '',
-    startPrice: '',
-    endPrice: '',
+    showPrice: '',
+    highPrice: '',
     lotSize: '',
     subscription: '',
     premiumGMP: {
@@ -72,9 +77,16 @@ const AddIPO = ({ isEdit = false, editData = null }) => {
     
     faceValue: '',
     issuePrice: '',
+    
     issueSize: '',
+    
+    issueSizeShare: '',
     freshIssue: '',
+    
+    freshIssueShare: '',
     offerForSale: '',
+    
+    offerForSaleShare: '',
     retailQuota: '',
     qibQuota: '',
     hniQuota: '',
@@ -99,6 +111,11 @@ const AddIPO = ({ isEdit = false, editData = null }) => {
       {
         period: '',
         assets: '',
+        
+        
+        expense: '',
+        borrowing: '',
+
         revenue: '',
         profit: ''
       }
@@ -220,6 +237,19 @@ const AddIPO = ({ isEdit = false, editData = null }) => {
       setShowConfetti(false);
     }, 3000);
   };
+  // const handleEditorChange = (content) => {
+  //   console.log(content)
+  //   setNewIpo({ ...newIpo, aboutCompany: content });
+  // };
+  
+// First, uncomment and implement the handleEditorChange function
+// Add this function inside your AddIPO component if it's not already defined or is commented out
+
+const handleEditorChange = (content) => {
+  console.log('Editor content changed:', content);
+  // setNewIpo({ ...newIpo, aboutCompany: content });
+};
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
@@ -282,8 +312,8 @@ const AddIPO = ({ isEdit = false, editData = null }) => {
       }
       
       const url = isEdit 
-        ? `https://ipo-6thl.onrender.com/api/ipo/${editData._id}`
-        : 'https://ipo-6thl.onrender.com/api/ipo';
+        ? `http://localhost:5000/api/ipo/${editData._id}`
+        : 'http://localhost:5000/api/ipo';
       
       const method = isEdit ? 'PUT' : 'POST';
       
@@ -327,63 +357,173 @@ const AddIPO = ({ isEdit = false, editData = null }) => {
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
-  // Add useEffect to pre-fill data when in edit mode
-  useEffect(() => {
-    if (isEdit && editData) {
-      setNewIpo({
-        ...newIpo,
-        ...editData,
-        // Ensure nested objects are properly set
-        premiumGMP: editData.premiumGMP || {
-          percentage: '',
-          value: ''
-        },
-        valuations: editData.valuations || {
-          eps: '',
-          peRatio: '',
-          ronw: '',
-          nav: ''
-        },
-        financials: editData.financials || [{
-          period: '',
-          assets: '',
-          revenue: '',
-          profit: ''
-        }],
-        lotDetails: {
-          retail: {
-            min:  editData.lotDetails?.retail.min ?? { lots: '', shares: '', amount: '' },
-            max:  editData.lotDetails?.retail.max ??{ lots: '', shares: '', amount: '' }
-          },
-          shni: editData.lotDetails?.shni ?? {
-            min: { lots: '', shares: '', amount: '' },
-            max: { lots: '', shares: '', amount: '' }
-          },
-          bhni: editData.lotDetails?.bhni ?? {
-            lots: '',
-            shares: '',
-            amount: ''
-          }
-        }
-      });
+  // 
+useEffect(() => {
+  if (isEdit && editData) {
+    console.log("Edit data received:", editData);
+    
+    // Create a deep copy of editData
+    const editDataCopy = JSON.parse(JSON.stringify(editData));
+    
+    // Initialize the state object with default values first, then apply editData values
+    const initializedData = {
+      // Default values for all fields
+      ipoName: editDataCopy.ipoName || '',
+      ipoLogo: editDataCopy.ipoLogo || '',
+      aboutCompany: editDataCopy.aboutCompany || '',
+      objectOfTheIssue: editDataCopy.objectOfTheIssue || '',
+      category: editDataCopy.category || 'Mainline',
+   showPrice   : editDataCopy.showPrice || '',
+      highPrice: editDataCopy.highPrice || '',
+      lotSize: editDataCopy.lotSize || '',
+      
+      // Default values for nested objects
+      premiumGMP: {
+        percentage: editDataCopy.premiumGMP?.percentage || '',
+        value: editDataCopy.premiumGMP?.value || ''
+      },
+      
+      // Dates
+      openDate: editDataCopy.openDate ? new Date(editDataCopy.openDate).toISOString().split('T')[0] : '',
+      closeDate: editDataCopy.closeDate ? new Date(editDataCopy.closeDate).toISOString().split('T')[0] : '',
+      allotmentDate: editDataCopy.allotmentDate ? new Date(editDataCopy.allotmentDate).toISOString().split('T')[0] : '',
+      refundsDate: editDataCopy.refundsDate ? new Date(editDataCopy.refundsDate).toISOString().split('T')[0] : '',
+      dematTransferDate: editDataCopy.dematTransferDate ? new Date(editDataCopy.dematTransferDate).toISOString().split('T')[0] : '',
+      listingDate: editDataCopy.listingDate ? new Date(editDataCopy.listingDate).toISOString().split('T')[0] : '',
+      
+      // Basic IPO details
+      faceValue: editDataCopy.faceValue || '',
+      issuePrice: editDataCopy.issuePrice || '',
+      issueSize: editDataCopy.issueSize || '',
+      issueSizeShare: editDataCopy.issueSizeShare || '',
+      freshIssueShare: editDataCopy.freshIssueShare || '',
 
-      // Set promoters if they exist (updated to handle string array)
-      if (editData.promoters && Array.isArray(editData.promoters)) {
-        setPromoters(editData.promoters.map(promoter => 
-          typeof promoter === 'string' ? { name: promoter } : promoter
-        ));
-      } else {
-        setPromoters([{ name: '' }]);
-      }
-      if (editData.leadManagers && Array.isArray(editData.leadManagers)) {
-        setLeadManagers(editData.leadManagers.map(manager => 
-          typeof manager === 'string' ? { name: manager } : manager
-        ));
-      } else {
-        setLeadManagers([{ name: '' }]);
-      }
+      freshIssue: editDataCopy.freshIssue || '',
+      offerForSaleShare: editDataCopy.offerForSaleShare || '',
+      retailQuota: editDataCopy.retailQuota || '',
+      qibQuota: editDataCopy.qibQuota || '',
+      hniQuota: editDataCopy.hniQuota || '',
+      retailApp: editDataCopy.retailApp || '',
+      shniApp: editDataCopy.shniApp || '',
+      bhniApp: editDataCopy.bhniApp || '',
+      issueType: editDataCopy.issueType || '',
+      listingAt: editDataCopy.listingAt || '',
+      registrar: editDataCopy.registrar || '',
+      allotmentLink: editDataCopy.allotmentLink || '',
+      drhpUrl: editDataCopy.drhpUrl || '',
+      rhpUrl: editDataCopy.rhpUrl || '',
+      anchorList: editDataCopy.anchorList || '',
+
+      valuations: {
+        eps: editDataCopy.valuations?.eps || '',
+        peRatio: editDataCopy.valuations?.peRatio || '',
+        ronw: editDataCopy.valuations?.ronw || '',
+        nav: editDataCopy.valuations?.nav || ''
+      },
+      
+      financials: editDataCopy.financials?.length > 0 
+        ? editDataCopy.financials.map(f => ({
+            period: f.period ? new Date(f.period).toISOString().split('T')[0] : '',
+            assets: f.assets || '',
+            revenue: f.revenue || '',
+            profit: f.profit || ''
+          }))
+        : [{ period: '', assets: '', revenue: '', profit: '' }],
+      
+      lotDetails: {
+        retail: {
+          min: {
+            lots: editDataCopy.lotDetails?.retail?.min?.lots || 1,
+            shares: editDataCopy.lotDetails?.retail?.min?.shares || '',
+            amount: editDataCopy.lotDetails?.retail?.min?.amount || '',
+          },
+          max: {
+            lots: editDataCopy.lotDetails?.retail?.max?.lots || '',
+            shares: editDataCopy.lotDetails?.retail?.max?.shares || '',
+            amount: editDataCopy.lotDetails?.retail?.max?.amount || '',
+          }
+        },
+        shni: {
+          min: {
+            lots: editDataCopy.lotDetails?.shni?.min?.lots || '',
+            shares: editDataCopy.lotDetails?.shni?.min?.shares || '',
+            amount: editDataCopy.lotDetails?.shni?.min?.amount || '',
+          },
+          max: {
+            lots: editDataCopy.lotDetails?.shni?.max?.lots || '',
+            shares: editDataCopy.lotDetails?.shni?.max?.shares || '',
+            amount: editDataCopy.lotDetails?.shni?.max?.amount || '',
+          }
+        },
+        bhni: {
+          lots: editDataCopy.lotDetails?.bhni?.lots || '',
+          shares: editDataCopy.lotDetails?.bhni?.shares || '',
+          amount: editDataCopy.lotDetails?.bhni?.amount || '',
+        }
+      },
+      
+      companyDetails: {
+        name: editDataCopy.companyDetails?.name || '',
+        address: editDataCopy.companyDetails?.address || '',
+        phone: editDataCopy.companyDetails?.phone || '',
+        email: editDataCopy.companyDetails?.email || '',
+        website: editDataCopy.companyDetails?.website || '',
+      },
+      
+      registrarDetails: {
+        name: editDataCopy.registrarDetails?.name || '',
+        address: editDataCopy.registrarDetails?.address || '',
+        phone: editDataCopy.registrarDetails?.phone || '',
+        email: editDataCopy.registrarDetails?.email || '',
+        website: editDataCopy.registrarDetails?.website || '',
+      },
+      
+      peersComparison: editDataCopy.peersComparison?.length > 0
+        ? editDataCopy.peersComparison.map(p => ({
+            companyName: p.companyName || '',
+            pbRatio: p.pbRatio || '',
+            peRatio: p.peRatio || '',
+            ronw: p.ronw || '',
+            totalRevenue: p.totalRevenue || '',
+          }))
+        : [{ companyName: '', pbRatio: '', peRatio: '', ronw: '', totalRevenue: '' }]
+    };
+    
+    console.log("Initialized data for edit:", initializedData);
+    setNewIpo(initializedData);
+    
+    // Set promoters if they exist
+    if (editDataCopy.promoters && Array.isArray(editDataCopy.promoters)) {
+      const formattedPromoters = editDataCopy.promoters.map(promoter => 
+        typeof promoter === 'string' ? { name: promoter } : promoter
+      );
+      console.log("Setting promoters:", formattedPromoters);
+      setPromoters(formattedPromoters.length > 0 ? formattedPromoters : [{ name: '' }]);
+    } else {
+      setPromoters([{ name: '' }]);
     }
-  }, [isEdit, editData]);
+    
+    // Set lead managers if they exist
+    if (editDataCopy.leadManagers && Array.isArray(editDataCopy.leadManagers)) {
+      const formattedManagers = editDataCopy.leadManagers.map(manager => 
+        typeof manager === 'string' ? { name: manager } : manager
+      );
+      console.log("Setting lead managers:", formattedManagers);
+      setLeadManagers(formattedManagers.length > 0 ? formattedManagers : [{ name: '' }]);
+    } else {
+      setLeadManagers([{ name: '' }]);
+    }
+    
+    // Also set switch states to true for edit mode to enable submit button
+    setSwitchStates({
+      isBasic: true,
+      isGMP: true,
+      isDate: true,
+      isIssue: true,
+      isPromoters: true,
+    });
+  }
+}, [isEdit, editData]);
 console.log("inside")
   const steps = [
     { 
@@ -497,27 +637,27 @@ console.log("inside")
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Start Price
+                  Show Price
                 </label>
                 <input
-                  type="number"
-                  value={newIpo.startPrice}
-                  onChange={(e) => setNewIpo({ ...newIpo, startPrice: e.target.value })}
+                  type="text"
+                  value={newIpo.showPrice}
+                  onChange={(e) => setNewIpo({ ...newIpo,showPrice: e.target.value })}
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   required
                 />
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  End Price
+                  High Price
                 </label>
                 <input
                   type="number"
-                  value={newIpo.endPrice}
+                  value={newIpo.highPrice}
                   onChange={(e) =>{
-                    newIpo.issuePrice=`${newIpo.startPrice}-${newIpo.endPrice}`
-                    console.log(newIpo.issuePrice)
-                    setNewIpo({ ...newIpo, endPrice: e.target.value })
+                    // newIpo.issuePrice=`${newIpo.startPrice}-${newIpo.endPrice}`
+                    // console.log(newIpo.issuePrice)
+                    setNewIpo({ ...newIpo, highPrice: e.target.value })
                   } }
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   required
@@ -532,7 +672,7 @@ console.log("inside")
                   value={newIpo.lotSize}
                   onChange={(e)=> {
 newIpo.lotDetails.retail.min.shares=e.target.value
-newIpo.lotDetails.retail.min.amount=e.target.value*newIpo.endPrice
+newIpo.lotDetails.retail.min.amount=e.target.value*newIpo.highPrice
 
 setNewIpo({ ...newIpo,lotSize: e.target.value })
                   } }
@@ -540,25 +680,36 @@ setNewIpo({ ...newIpo,lotSize: e.target.value })
                   required
                 />
               </div>
-              <div className="col-span-2">
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  About Company
-                </label>
-                <textarea
-                  // type="textarea"
-                  value={newIpo.aboutCompany}
-                  onChange={(e) => setNewIpo({ ...newIpo, aboutCompany: e.target.value })}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  
-                />
-              </div>
+              <div>
+        <label className="block text-sm font-medium text-gray-700 mb-2">
+          About Company
+        </label>
+        <ReactQuill
+  value={newIpo.aboutCompany}
+  onChange={(content) => {
+    console.log('Editor content changed:', content);
+    setNewIpo({ ...newIpo, aboutCompany: content });
+  }}
+  modules={{
+    toolbar: [
+      ['bold', 'italic', 'underline', 'strike'],
+      [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+      ['link'],
+      ['clean']
+    ],
+  }}
+  className="bg-white rounded-lg"
+  theme="snow"
+/>
+      </div>
+      
             </div>
           </div>
         );
 
       case 2:
         const handleGmpChange = (field, value) => {
-          const endPrice = newIpo.endPrice || 100; // Replace 100 with a default value or dynamic calculation if `endPrice` is undefined.
+          const endPrice = newIpo.highPrice || 100; // Replace 100 with a default value or dynamic calculation if `endPrice` is undefined.
       
           let updatedGmp = { ...newIpo.premiumGMP, [field]: value };
       
@@ -704,7 +855,7 @@ setNewIpo({ ...newIpo,lotSize: e.target.value })
                     required
                   />
                 </div>
-                <div>
+                {/* <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
                     Issue Price (₹)
                   </label>
@@ -720,42 +871,124 @@ setNewIpo({ ...newIpo,lotSize: e.target.value })
 />
 
                 </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Issue Size (₹ in Cr)
-                  </label>
-                  <input
-                    type="number"
-                    value={newIpo.issueSize}
-                    onChange={(e) => setNewIpo({ ...newIpo, issueSize: e.target.value })}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    required
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Fresh Issue (₹ in Cr)
-                  </label>
-                  <input
-                    type="number"
-                    value={newIpo.freshIssue}
-                    onChange={(e) => setNewIpo({ ...newIpo, freshIssue: e.target.value })}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    required
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Offer for Sale (₹ in Cr)
-                  </label>
-                  <input
-                    type="number"
-                    value={newIpo.offerForSale}
-                    onChange={(e) => setNewIpo({ ...newIpo, offerForSale: e.target.value })}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    required
-                  />
-                </div>
+                 */}
+            <div>
+  <label className="block text-sm font-medium text-gray-700 mb-2">
+    Fresh Issue (₹ in Cr)
+  </label>
+  <input
+    type="number"
+    value={newIpo.freshIssue}
+    onChange={(e) => {
+      const freshIssueValue = e.target.value;
+      // Calculate total Issue Size (Fresh Issue + Offer for Sale)
+      const totalIssueSize = 
+        (parseFloat(freshIssueValue) || 0) + (parseFloat(newIpo.offerForSale) || 0);
+      
+      setNewIpo({ 
+        ...newIpo, 
+        freshIssue: freshIssueValue,
+        issueSize: totalIssueSize.toFixed(2)
+      });
+    }}
+    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+  />
+</div>
+
+<div>
+  <label className="block text-sm font-medium text-gray-700 mb-2">
+    Fresh Issue Share
+  </label>
+  <input
+    type="number"
+    value={newIpo.freshIssueShare}
+    onChange={(e) => {
+      const freshIssueShareValue = e.target.value;
+      // Calculate total Issue Size Share
+      const totalIssueShareSize = 
+        (parseInt(freshIssueShareValue) || 0) + (parseInt(newIpo.offerForSaleShare) || 0);
+      
+      setNewIpo({
+        ...newIpo,
+        freshIssueShare: freshIssueShareValue,
+        issueSizeShare: totalIssueShareSize
+      });
+    }}
+    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+  />
+</div>
+
+<div>
+  <label className="block text-sm font-medium text-gray-700 mb-2">
+    Offer for Sale (₹ in Cr)
+  </label>
+  <input
+    type="number"
+    value={newIpo.offerForSale}
+    onChange={(e) => {
+      const offerForSaleValue = e.target.value;
+      // Calculate total Issue Size
+      const totalIssueSize = 
+        (parseFloat(newIpo.freshIssue) || 0) + (parseFloat(offerForSaleValue) || 0);
+      
+      setNewIpo({
+        ...newIpo,
+        offerForSale: offerForSaleValue,
+        issueSize: totalIssueSize.toFixed(2)
+      });
+    }}
+    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+  />
+</div>
+
+<div>
+  <label className="block text-sm font-medium text-gray-700 mb-2">
+    Offer for Sale Share
+  </label>
+  <input
+    type="number"
+    value={newIpo.offerForSaleShare}
+    onChange={(e) => {
+      const offerForSaleShareValue = e.target.value;
+      // Calculate total Issue Size Share
+      const totalIssueShareSize = 
+        (parseInt(newIpo.freshIssueShare) || 0) + (parseInt(offerForSaleShareValue) || 0);
+      
+      setNewIpo({
+        ...newIpo,
+        offerForSaleShare: offerForSaleShareValue,
+        issueSizeShare: totalIssueShareSize
+      });
+    }}
+    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+  />
+</div>
+
+<div>
+  <label className="block text-sm font-medium text-gray-700 mb-2">
+    Issue Size (₹ in Cr)
+  </label>
+  <input
+    type="number"
+    value={newIpo.issueSize}
+    className="w-full px-4 py-2 border border-gray-300 rounded-lg bg-gray-50 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+    readOnly
+  />
+  <p className="mt-1 text-xs text-gray-500">Auto-calculated (Fresh Issue + Offer for Sale)</p>
+</div>
+
+<div>
+  <label className="block text-sm font-medium text-gray-700 mb-2">
+    Issue Size Share
+  </label>
+  <input
+    type="number"
+    value={newIpo.issueSizeShare}
+    className="w-full px-4 py-2 border border-gray-300 rounded-lg bg-gray-50 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+    readOnly
+  />
+  <p className="mt-1 text-xs text-gray-500">Auto-calculated (Fresh Issue Share + Offer for Sale Share)</p>
+</div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
                     Retail Quota (%)
@@ -838,23 +1071,51 @@ setNewIpo({ ...newIpo,lotSize: e.target.value })
                     className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   >
                     <option value="">Select Issue Type</option>
-                    <option value="book-built">Book Built</option>
-                    <option value="fixed-price">Fixed Price</option>
+                    <option value="book-built">Book Built Issue IPO</option>
+                    <option value="fixed-price">Fixed Price Issue IPO</option>
                   </select>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Listing At
-                  </label>
-                  <input
-                    type="text"
-                    value={newIpo.listingAt}
-                    onChange={(e) => setNewIpo({ ...newIpo, listingAt: e.target.value })}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    placeholder="e.g., BSE, NSE"
-                    required
-                  />
-                </div>
+  <label className="block text-sm font-medium text-gray-700 mb-2">
+    Listing At
+  </label>
+  <div className="space-y-2">
+    <div className="flex items-center space-x-4">
+      <label className="inline-flex items-center">
+        <input
+          type="radio"
+          value="BSE"
+          checked={newIpo.listingAt === "BSE"}
+          onChange={(e) => setNewIpo({ ...newIpo, listingAt: e.target.value })}
+          className="form-radio h-4 w-4 text-blue-600"
+        />
+        <span className="ml-2">BSE</span>
+      </label>
+      
+      <label className="inline-flex items-center">
+        <input
+          type="radio"
+          value="NSE"
+          checked={newIpo.listingAt === "NSE"}
+          onChange={(e) => setNewIpo({ ...newIpo, listingAt: e.target.value })}
+          className="form-radio h-4 w-4 text-blue-600"
+        />
+        <span className="ml-2">NSE</span>
+      </label>
+      
+      <label className="inline-flex items-center">
+        <input
+          type="radio"
+          value="BSE,NSE"
+          checked={newIpo.listingAt === "BSE,NSE"}
+          onChange={(e) => setNewIpo({ ...newIpo, listingAt: e.target.value })}
+          className="form-radio h-4 w-4 text-blue-600"
+        />
+        <span className="ml-2">Both (BSE & NSE)</span>
+      </label>
+    </div>
+  </div>
+</div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
                     Registrar
@@ -1002,7 +1263,7 @@ setNewIpo({ ...newIpo,lotSize: e.target.value })
                     type="button"
                     onClick={() => setNewIpo({
                       ...newIpo,
-                      financials: [...newIpo.financials, { period: '', assets: '', revenue: '', profit: '' }]
+                      financials: [...newIpo.financials, { period: '',  borrowing:'',expense:'',assets:'', revenue: '', profit: '' }]
                     })}
                     className="inline-flex items-center px-4 py-2 text-sm font-medium text-white bg-gradient-to-r from-blue-500 to-indigo-500 rounded-md hover:from-blue-600 hover:to-indigo-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
                   >
@@ -1057,7 +1318,52 @@ setNewIpo({ ...newIpo,lotSize: e.target.value })
                           className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                         />
                       </div>
-                      <div className="relative">
+                      <div >
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Expense (₹ Cr)</label>
+                        <div className="flex items-center gap-2">
+                          <input
+                            type="number"
+                            value={financial.expense}
+                            onChange={(e) => {
+                              const newFinancials = [...newIpo.financials];
+                              newFinancials[index].expense = e.target.value;
+                              setNewIpo({ ...newIpo, financials: newFinancials });
+                            }}
+                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                          />
+                      
+                        </div>
+                      </div> 
+                      <div >
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Borrowing (₹ Cr)</label>
+                        <div className="flex items-center gap-2">
+                          <input
+                            type="number"
+                            value={financial.borrowing}
+                            onChange={(e) => {
+                              const newFinancials = [...newIpo.financials];
+                              newFinancials[index].borrowing = e.target.value;
+                              setNewIpo({ ...newIpo, financials: newFinancials });
+                            }}
+                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                          />
+                          {/* {newIpo.financials.length > 1 && (
+                            <button
+                              type="button"
+                              onClick={() => {
+                                const newFinancials = newIpo.financials.filter((_, i) => i !== index);
+                                setNewIpo({ ...newIpo, financials: newFinancials });
+                              }}
+                              className="p-2 text-red-500 hover:text-red-700 hover:bg-red-50 rounded-full"
+                            >
+                              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                                <path fillRule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clipRule="evenodd" />
+                              </svg>
+                            </button>
+                          )} */}
+                        </div>
+                      </div> 
+                       <div>
                         <label className="block text-sm font-medium text-gray-700 mb-1">Profit (₹ Cr)</label>
                         <div className="flex items-center gap-2">
                           <input
@@ -1091,145 +1397,250 @@ setNewIpo({ ...newIpo,lotSize: e.target.value })
                 </div>
               </div>
            
+            
+<div className="col-span-2">
+  <label className="block text-sm font-medium text-gray-700 mb-2">
+    Object of the Issue
+  </label>
+  <ReactQuill
+    value={newIpo.objectOfTheIssue || ''}
+    onChange={(content) => {
+      setNewIpo({ ...newIpo, objectOfTheIssue: content });
+    }}
+    modules={{
+      toolbar: [
+        ['bold', 'italic', 'underline', 'strike'],
+        [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+        ['link'],
+        ['clean']
+      ],
+    }}
+    className="bg-white rounded-lg"
+    theme="snow"
+  />
+</div>
+
+
+{/* Company Strengths Section */}
+<div className="col-span-2 mt-6">
+  <label className="block text-sm font-medium text-gray-700 mb-2">
+    Company Strengths
+  </label>
+  <ReactQuill
+    value={newIpo.strengths || ''}
+    onChange={(content) => {
+      setNewIpo({ ...newIpo, strengths: content });
+    }}
+    modules={{
+      toolbar: [
+        ['bold', 'italic', 'underline', 'strike'],
+        [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+        ['link'],
+        ['clean']
+      ],
+    }}
+    className="bg-white rounded-lg"
+    theme="snow"
+  />
+</div>
+
+{/* Risks Section */}
+<div className="col-span-2 mt-6">
+  <label className="block text-sm font-medium text-gray-700 mb-2">
+    Risks & Concerns
+  </label>
+  <ReactQuill
+    value={newIpo.risks || ''}
+    onChange={(content) => {
+      setNewIpo({ ...newIpo, risks: content });
+    }}
+    modules={{
+      toolbar: [
+        ['bold', 'italic', 'underline', 'strike'],
+        [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+        ['link'],
+        ['clean']
+      ],
+    }}
+    className="bg-white rounded-lg"
+    theme="snow"
+  />
+</div>
+
+          {/* Company Details */}
+          <div className="col-span-2 space-y-4">
+            <h4 className="text-lg font-semibold text-gray-800">Company Details</h4>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Company Name
+                </label>
+                <input
+                  type="text"
+                  value={newIpo.companyDetails?.name || ''}
+                  onChange={(e) =>
+                    setNewIpo({
+                      ...newIpo,
+                      companyDetails: { ...newIpo.companyDetails, name: e.target.value },
+                    })
+                  }
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Address
+                </label>
+                <input
+                  type="text"
+                  value={newIpo.companyDetails?.address || ''}
+                  onChange={(e) =>
+                    setNewIpo({
+                      ...newIpo,
+                      companyDetails: { ...newIpo.companyDetails, address: e.target.value },
+                    })
+                  }
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Phone
+                </label>
+                <input
+                  type="tel"
+                  value={newIpo.companyDetails?.phone || ''}
+                  onChange={(e) =>
+                    setNewIpo({
+                      ...newIpo,
+                      companyDetails: { ...newIpo.companyDetails, phone: e.target.value },
+                    })
+                  }
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Email
+                </label>
+                <input
+                  type="email"
+                  value={newIpo.companyDetails?.email || ''}
+                  onChange={(e) =>
+                    setNewIpo({
+                      ...newIpo,
+                      companyDetails: { ...newIpo.companyDetails, email: e.target.value },
+                    })
+                  }
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                />
+              </div>
               <div className="col-span-2">
-          <label className="block text-sm font-medium text-gray-700 mb-2">
-            Object of the Issue
-          </label>
-          <textarea
-            rows="3"
-            value={newIpo.objectOfTheIssue || ''}
-            onChange={(e) => setNewIpo({ ...newIpo, objectOfTheIssue: e.target.value })}
-            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            placeholder="Describe the object of the issue..."
-          />
-        </div>
-
-        {/* Company Details */}
-        <div className="col-span-2 space-y-4">
-          <h4 className="text-lg font-semibold text-gray-800">Company Details</h4>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Company Name
-              </label>
-              <input
-                type="text"
-                value={newIpo.companyDetails?.name || ''}
-                onChange={(e) =>
-                  setNewIpo({
-                    ...newIpo,
-                    companyDetails: { ...newIpo.companyDetails, name: e.target.value },
-                  })
-                }
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Address
-              </label>
-              <input
-                type="text"
-                value={newIpo.companyDetails?.address || ''}
-                onChange={(e) =>
-                  setNewIpo({
-                    ...newIpo,
-                    companyDetails: { ...newIpo.companyDetails, address: e.target.value },
-                  })
-                }
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Phone
-              </label>
-              <input
-                type="tel"
-                value={newIpo.companyDetails?.phone || ''}
-                onChange={(e) =>
-                  setNewIpo({
-                    ...newIpo,
-                    companyDetails: { ...newIpo.companyDetails, phone: e.target.value },
-                  })
-                }
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Email
-              </label>
-              <input
-                type="email"
-                value={newIpo.companyDetails?.email || ''}
-                onChange={(e) =>
-                  setNewIpo({
-                    ...newIpo,
-                    companyDetails: { ...newIpo.companyDetails, email: e.target.value },
-                  })
-                }
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-              />
-            </div>
-            <div className="col-span-2">
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Website
-              </label>
-              <input
-                type="url"
-                value={newIpo.companyDetails?.website || ''}
-                onChange={(e) =>
-                  setNewIpo({
-                    ...newIpo,
-                    companyDetails: { ...newIpo.companyDetails, website: e.target.value },
-                  })
-                }
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-                placeholder="https://www.example.com"
-              />
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Website
+                </label>
+                <input
+                  type="url"
+                  value={newIpo.companyDetails?.website || ''}
+                  onChange={(e) =>
+                    setNewIpo({
+                      ...newIpo,
+                      companyDetails: { ...newIpo.companyDetails, website: e.target.value },
+                    })
+                  }
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                  placeholder="https://www.example.com"
+                />
+              </div>
             </div>
           </div>
-        </div>
-
-        {/* Registrar Details */}
-        <div className="col-span-2 space-y-4">
-          <h4 className="text-lg font-semibold text-gray-800">Registrar Details</h4>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Registrar Name
-              </label>
-              <input
-                type="text"
-                value={newIpo.registrarDetails?.name || ''}
-                onChange={(e) =>
-                  setNewIpo({
-                    ...newIpo,
-                    registrarDetails: { ...newIpo.registrarDetails, name: e.target.value },
-                  })
-                }
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Registrar Address
-              </label>
-              <input
-                type="text"
-                value={newIpo.registrarDetails?.address || ''}
-                onChange={(e) =>
-                  setNewIpo({
-                    ...newIpo,
-                    registrarDetails: { ...newIpo.registrarDetails, address: e.target.value },
-                  })
-                }
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-              />
-            </div>
-          </div>
-        </div>
+{/* Registrar Details */}
+<div className="col-span-2 space-y-4">
+  <h4 className="text-lg font-semibold text-gray-800">Registrar Details</h4>
+  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+    <div>
+      <label className="block text-sm font-medium text-gray-700 mb-2">
+        Registrar Name
+      </label>
+      <input
+        type="text"
+        value={newIpo.registrarDetails?.name || ''}
+        onChange={(e) =>
+          setNewIpo({
+            ...newIpo,
+            registrarDetails: { ...newIpo.registrarDetails, name: e.target.value },
+          })
+        }
+        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+      />
+    </div>
+    <div>
+      <label className="block text-sm font-medium text-gray-700 mb-2">
+        Registrar Address
+      </label>
+      <input
+        type="text"
+        value={newIpo.registrarDetails?.address || ''}
+        onChange={(e) =>
+          setNewIpo({
+            ...newIpo,
+            registrarDetails: { ...newIpo.registrarDetails, address: e.target.value },
+          })
+        }
+        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+      />
+    </div>
+    <div>
+      <label className="block text-sm font-medium text-gray-700 mb-2">
+        Phone
+      </label>
+      <input
+        type="tel"
+        value={newIpo.registrarDetails?.phone || ''}
+        onChange={(e) =>
+          setNewIpo({
+            ...newIpo,
+            registrarDetails: { ...newIpo.registrarDetails, phone: e.target.value },
+          })
+        }
+        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+      />
+    </div>
+    <div>
+      <label className="block text-sm font-medium text-gray-700 mb-2">
+        Email
+      </label>
+      <input
+        type="email"
+        value={newIpo.registrarDetails?.email || ''}
+        onChange={(e) =>
+          setNewIpo({
+            ...newIpo,
+            registrarDetails: { ...newIpo.registrarDetails, email: e.target.value },
+          })
+        }
+        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+      />
+    </div>
+    <div className="col-span-2">
+      <label className="block text-sm font-medium text-gray-700 mb-2">
+        Website
+      </label>
+      <input
+        type="url"
+        value={newIpo.registrarDetails?.website || ''}
+        onChange={(e) =>
+          setNewIpo({
+            ...newIpo,
+            registrarDetails: { ...newIpo.registrarDetails, website: e.target.value },
+          })
+        }
+        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+        placeholder="https://www.example.com"
+      />
+    </div>
+  </div>
+</div>
 
       {/* Peers Comparison */}
 <div className="col-span-2">
@@ -1423,7 +1834,7 @@ setNewIpo({ ...newIpo,lotSize: e.target.value })
                     onChange={(e) =>{
                       
                       newIpo.lotDetails.retail.max.shares=e.target.value*newIpo.lotSize
-                      newIpo.lotDetails.retail.max.amount=newIpo.lotDetails.retail.max.shares*newIpo.endPrice
+                      newIpo.lotDetails.retail.max.amount=newIpo.lotDetails.retail.max.shares*newIpo.highPrice
 
                       setNewIpo({
                       ...newIpo,
@@ -1490,7 +1901,7 @@ setNewIpo({ ...newIpo,lotSize: e.target.value })
                     onChange={(e) =>{
                             
                       newIpo.lotDetails.shni.min.shares=e.target.value*newIpo.lotSize
-                      newIpo.lotDetails.shni.min.amount=newIpo.lotDetails.shni.min.shares*newIpo.endPrice
+                      newIpo.lotDetails.shni.min.amount=newIpo.lotDetails.shni.min.shares*newIpo.highPrice
 
                   
                        setNewIpo({
@@ -1552,7 +1963,7 @@ setNewIpo({ ...newIpo,lotSize: e.target.value })
                     value={newIpo.lotDetails.shni.max.lots}
                     onChange={(e)=>{
                       newIpo.lotDetails.shni.max.shares=e.target.value*newIpo.lotSize
-                      newIpo.lotDetails.shni.max.amount=newIpo.lotDetails.shni.max.shares*newIpo.endPrice
+                      newIpo.lotDetails.shni.max.amount=newIpo.lotDetails.shni.max.shares*newIpo.highPrice
 
                   
                      
@@ -1620,7 +2031,7 @@ setNewIpo({ ...newIpo,lotSize: e.target.value })
                     value={newIpo.lotDetails.bhni.lots}
                     onChange={(e)=> {
                       newIpo.lotDetails.bhni.shares=e.target.value*newIpo.lotSize
-                      newIpo.lotDetails.bhni.amount=newIpo.lotDetails.bhni.shares*newIpo.endPrice
+                      newIpo.lotDetails.bhni.amount=newIpo.lotDetails.bhni.shares*newIpo.highPrice
 
                   
                      
@@ -1706,7 +2117,7 @@ setNewIpo({ ...newIpo,lotSize: e.target.value })
                 )}
                 <div>
                   <p className="text-sm text-gray-600">Price Band</p>
-                  <p className="font-medium">₹{newIpo.startPrice || '-'} - ₹{newIpo.endPrice || '-'}</p>
+                  <p className="font-medium">₹{newIpo.highPrice}</p>
                 </div>
             
             </div>

@@ -20,7 +20,7 @@ const [error, setError] = useState(null);
   const fetchIpos = async () => {
     try {
       setLoading(true);
-      const response = await fetch('https://ipo-6thl.onrender.com/api/ipo?status=all');
+      const response = await fetch('http://localhost:5000/api/ipo?status=all');
       if (!response.ok) {
         throw new Error('Failed to fetch IPOs');
       }
@@ -133,7 +133,7 @@ const [error, setError] = useState(null);
                   )}
           <h2 className="text-xl font-semibold text-gray-800">{ipo.ipoName}</h2>
         
-          <p className="text-gray-600">Offer Price: <span className="font-bold text-blue-600">${ipo.startPrice} - ${ipo.endPrice}</span></p>
+          <p className="text-gray-600">Offer Price: <span className="font-bold text-blue-600">${ipo.showPrice}</span></p>
           <p className="text-gray-600">Allotment Date:  {moment(ipo.allotmentDate).format('DD/MM/YYYY')}</p>
           <p className="text-gray-600">Offer Date:  {moment(ipo.offerStartDate).format('DD/MM/YYYY')} - {moment(ipo.offerEndDate).format('DD/MM/YYYY')}  </p>
           {/* <p className="text-gray-600">Offer End: {ipo.offerEndDate}</p> */}
