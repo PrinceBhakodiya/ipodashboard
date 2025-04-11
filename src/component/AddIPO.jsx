@@ -25,6 +25,7 @@ import { Switch } from '@headlessui/react'; // Import the Switch component
 import ReactQuill from 'react-quill';
 
 // Custom Input Component with enhanced features
+const getDefaultDate = () => new Date().toISOString().split('T')[0];
 
 const AddIPO = ({ isEdit = false, editData = null }) => {
   const [notification, setNotification] = useState({ show: false, type: '', message: '' });
@@ -50,122 +51,57 @@ const AddIPO = ({ isEdit = false, editData = null }) => {
   const [windowDimension, setWindowDimension] = useState({
     width: window.innerWidth,
     height: window.innerHeight
-  });const [newIpo, setNewIpo] = useState({
-    ipoName: '',
-    ipoLogo: '',
-    aboutCompany: '',
-    category: 'Mainline',
-    strengths: '',
-    risks: '',
-    offerDate: '',
-    showPrice: '',
-    highPrice: '',
-    lotSize: '',
-    subscription: '',
-    premiumGMP: {
-      percentage: '',
-      value: ''
-    },
-    openDate: '',
-    closeDate: '',
-    allotmentDate: '',
-    refundsDate: '',
-    dematTransferDate: '',
-    listingDate: '',
-    allotmentLink: '',
-    companyDescription: '',
-    
-    faceValue: '',
-    issuePrice: '',
-    
-    issueSize: '',
-    
-    issueSizeShare: '',
-    freshIssue: '',
-    
-    freshIssueShare: '',
-    offerForSale: '',
-    
-    offerForSaleShare: '',
-    retailQuota: '',
-    qibQuota: '',
-    hniQuota: '',
-    retailApp: '',
-    shniApp: '',
-    bhniApp: '',
-    issueType: '',
-    listingAt: '',
-    registrar: '',
-    drhpUrl: '',
-    rhpUrl: '',
-    anchorList: '',
-    
-    valuations: {
-      eps: '',
-      peRatio: '',
-      ronw: '',
-      nav: ''
-    },
-  
-    financials: [
-      {
-        period: '',
-        assets: '',
-        
-        
-        expense: '',
-        borrowing: '',
-
-        revenue: '',
-        profit: ''
-      }
-    ],
-  
+  });  const [newIpo, setNewIpo] = useState({
+    ipoName: '', ipoLogo: '', aboutCompany: '', category: 'Mainline',
+    strengths: '', risks: '', showPrice: '', highPrice: '', lotSize: '',
+    premiumGMP: { percentage: '', value: '' },
+    openDate: getDefaultDate(), closeDate: getDefaultDate(),
+    allotmentDate: getDefaultDate(), refundsDate: getDefaultDate(),
+    dematTransferDate: getDefaultDate(), listingDate: getDefaultDate(),
+    allotmentLink: '', faceValue: '', issuePrice: '', issueSize: '',
+    issueSizeShare: '', freshIssue: '', freshIssueShare: '',
+    offerForSale: '', offerForSaleShare: '', retailQuota: '', qibQuota: '',
+    hniQuota: '', retailApp: '', shniApp: '', bhniApp: '', issueType: '',
+    listingAt: '', registrar: '', drhpUrl: '', rhpUrl: '', anchorList: '',
+    valuations: { eps: '', peRatio: '', ronw: '', nav: '' },
+    financials: [{ period: '', assets: '', revenue: '', expense: '', borrowing: '', profit: '' }],
     lotDetails: {
-      retail: {
-        min: { lots: 1, shares: '', amount: '' },
-        max: { lots: '', shares: '', amount: '' }
-      },
-      shni: {
-        min: { lots: '', shares: '', amount: '' },
-        max: { lots: '', shares: '', amount: '' }
-      },
-      bhni: {
-        lots: '',
-        shares: '',
-        amount: ''
-      }
+      retail: { min: { lots: 1, shares: '', amount: '' }, max: { lots: '', shares: '', amount: '' } },
+      shni: { min: { lots: '', shares: '', amount: '' }, max: { lots: '', shares: '', amount: '' } },
+      bhni: { lots: '', shares: '', amount: '' }
     },
-  
-    // New fields
-    objectOfTheIssue: '',
-    
-    companyDetails: {
-      name: '',
-      address: '',
-      phone: '',
-      email: '',
-      website: ''
+    objectOfTheIssue: '', companyDetails: {
+      name: '', address: '', phone: '', email: '', website: ''
     },
-    
     registrarDetails: {
-      name: '',
-      address: '',
-      phone: '',
-      email: '',
-      website: ''
+      name: '', address: '', phone: '', email: '', website: ''
     },
-  
-    peersComparison: [
-      {
-        companyName: '',
-        pbRatio: '',
-        peRatio: '',
-        ronw: '',
-        totalRevenue: ''
-      }
-    ]
+    peersComparison: [{ companyName: '', pbRatio: '', peRatio: '', ronw: '', totalRevenue: '' }]
   });
+
+  useEffect(() => {
+    if (isEdit && editData) {
+      const editCopy = JSON.parse(JSON.stringify(editData));
+      setNewIpo(prev => ({
+        ...prev,
+        ...editCopy,
+        openDate: editCopy.openDate || getDefaultDate(),
+        closeDate: editCopy.closeDate || getDefaultDate(),
+        allotmentDate: editCopy.allotmentDate || getDefaultDate(),
+        refundsDate: editCopy.refundsDate || getDefaultDate(),
+        dematTransferDate: editCopy.dematTransferDate || getDefaultDate(),
+        listingDate: editCopy.listingDate || getDefaultDate(),
+        premiumGMP: editCopy.premiumGMP || { percentage: '', value: '' },
+        valuations: editCopy.valuations || { eps: '', peRatio: '', ronw: '', nav: '' },
+        financials: editCopy.financials || [{ period: '', assets: '', revenue: '', expense: '', borrowing: '', profit: '' }],
+        peersComparison: editCopy.peersComparison || [{ companyName: '', pbRatio: '', peRatio: '', ronw: '', totalRevenue: '' }],
+        lotDetails: editCopy.lotDetails || prev.lotDetails,
+        companyDetails: editCopy.companyDetails || prev.companyDetails,
+        registrarDetails: editCopy.registrarDetails || prev.registrarDetails
+      }));
+    }
+  }, [isEdit, editData]);
+
   
   const validateDate = (date) => {
     if (!date) return false;
@@ -324,9 +260,16 @@ const handleEditorChange = (content) => {
         },
         body: JSON.stringify(cleanedData)
       });
+      if (!response.ok) {  console.log(`Error: ${response.status} - ${response.statusText}`);
   
-      if (!response.ok) {
-        showNotification('failed', isEdit ? 'Failed to update IPO' : 'Failed to create IPO');
+      // You can also try to parse the error body if it contains details
+      try {
+        const errorData = await response.json();        showNotification('failed',errorData.message  );
+
+        console.log(errorData.message || errorData.error || 'Unknown error');
+      } catch (e) {
+        console.log('Could not parse error response');
+      }
         throw new Error(isEdit ? 'Failed to update IPO' : 'Failed to create IPO');
       }
   
@@ -340,7 +283,7 @@ const handleEditorChange = (content) => {
       }, 3000);
   
     } catch (error) {
-      showNotification('error', error.message);
+      // showNotification('error', error.message);
     }
   };
   
