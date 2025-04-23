@@ -115,11 +115,20 @@ const [error, setError] = useState(null);
     );
   }
 
-
+  const filteredIPOs = ipoList.filter(ipo => {
+    const status = ipo.ipoStatus.toLowerCase();
+    const tab = activeTab.toLowerCase();
+  
+    if (tab === 'live') {
+      return ['live', 'allotment out'].includes(status);
+    }
+  
+    return status === tab;
+  });
   const renderIpoCards = () => {
     // console.log(ipoList[0].ipoStatus)
-    return ipoList
-      .filter(ipo => ipo.ipoStatus == activeTab.toLowerCase())
+    return filteredIPOs
+      // .filter(ipo => ipo.ipoStatus == activeTab.toLowerCase())
       .map((ipo) => (
         <div 
           key={ipo._id} 
