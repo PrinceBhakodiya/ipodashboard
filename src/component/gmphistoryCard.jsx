@@ -11,7 +11,7 @@ const GmpHistoryCard = ({ ipoId, className }) => {
     const fetchGmpHistory = async () => {
       try {
         setLoading(true);
-        const response = await fetch(`https://ipo-6thl.onrender.com/api/ipo/${ipoId}/gmp-history`);
+        const response = await fetch(`http://64.227.159.217:5000/api/ipo/${ipoId}/gmp-history`);
         const data = await response.json();
         
         if (data.success && data.history.length > 0) {

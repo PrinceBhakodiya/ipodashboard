@@ -26,7 +26,7 @@ const Notification = () => {
   const fetchIpos = async () => {
     try {
       setLoading(true);
-      const response = await fetch('https://ipo-6thl.onrender.com/api/ipo?status=all');
+      const response = await fetch('http://64.227.159.217:5000/api/ipo?status=all');
       if (!response.ok) {
         throw new Error('Failed to fetch IPOs');
       }
@@ -129,7 +129,7 @@ const Notification = () => {
     setIsLoading(true);
     
     try {
-      const response = await axios.post('https://ipo-6thl.onrender.com/api/ipo/notifications/send', {
+      const response = await axios.post('http://64.227.159.217:5000/api/ipo/notifications/send', {
         title: notificationTitle,
         body: notificationBody,
         topic: 'all'

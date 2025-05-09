@@ -248,8 +248,8 @@ const handleEditorChange = (content) => {
       }
       
       const url = isEdit 
-        ? `https://ipo-6thl.onrender.com/api/ipo/${editData._id}`
-        : 'https://ipo-6thl.onrender.com/api/ipo';
+        ? `http://64.227.159.217:5000/api/ipo/${editData._id}`
+        : 'http://64.227.159.217:5000/api/ipo';
       
       const method = isEdit ? 'PUT' : 'POST';
       

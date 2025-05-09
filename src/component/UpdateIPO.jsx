@@ -26,7 +26,7 @@ const UpdateIPO = () => {
   useEffect(() => {
     const fetchIPO = async () => {
       try {
-        const response = await fetch(`https://ipo-6thl.onrender.com/api/ipo/${id}`);
+        const response = await fetch(`http://64.227.159.217:5000/api/ipo/${id}`);
         if (!response.ok) {
           throw new Error('Failed to fetch IPO data');
         }
